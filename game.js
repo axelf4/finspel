@@ -158,7 +158,7 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest"],
 				var enemy = em.createEntity();
 				em.addComponent(enemy, new Position(x, y));
 				em.addComponent(enemy, new LastPosition());
-				var speed = dt / 100;
+				var speed = 0.165;
 				direction = direction * Math.PI / 180;
 				em.addComponent(enemy, new Velocity(Math.cos(direction) * speed, Math.sin(direction) * speed));
 				em.addComponent(enemy, new Emitter(options, 50));
