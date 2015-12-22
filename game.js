@@ -7,7 +7,6 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest"],
 			var renderer = new THREE.WebGLRenderer();
 			// renderer.setSize(window.innerWidth, window.innerHeight);
 			renderer.setClearColor(0x000000, 1);
-			renderer.setPixelRatio(window.devicePixelRatio);
 			document.body.appendChild(renderer.domElement);
 			var stats = new Stats();
 			stats.domElement.style.position = 'absolute';
@@ -21,10 +20,6 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest"],
 					width = Math.ceil(height * targetAspectRatio);
 				}
 				// var x = window.innerWidth / 2 - width / 2, y = window.innerHeight / 2 - height / 2;
-				// renderer.setViewport(x, y, width, height);
-				// camera.right = width;
-				// camera.top = height;
-				// camera.updateProjectionMatrix();
 				renderer.setSize(width, height); // renderer.setSize(window.innerWidth, window.innerHeight);
 			};
 			onResize();
@@ -55,7 +50,7 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest"],
 				return canvas;
 			};
 			var particleSystem = new THREE.GPUParticleSystem({
-				maxParticles: 5000000
+				maxParticles: 700000
 			});
 			scene.add(particleSystem);
 
@@ -99,11 +94,9 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest"],
 				squareGeometry.vertices.push(new THREE.Vector3(100, 100, 0));
 				squareGeometry.faces.push(new THREE.Face3(0, 1, 2));
 				squareGeometry.faces.push(new THREE.Face3(3, 2, 1));
-
 				var squareMaterial = new THREE.MeshBasicMaterial({
 					color: 0xFFFFFF
 				});
-
 				var squareMesh = new THREE.Mesh(squareGeometry, squareMaterial);
 				// scene.add(squareMesh);
 
@@ -115,7 +108,7 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest"],
 					color: 0xaa88ff,
 					colorRandomness: .2,
 					turbulence: .5,
-					lifetime: 2,
+					lifetime: 1.5,
 					size: 10,
 					sizeRandomness: 2
 				};
@@ -129,30 +122,35 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest"],
 				return player;
 			};
 
-			var MOVEMENT_SPEED = 0.5;
+			var MOVEMENT_SPEED = 0.4;
 			var player = createPlayer();
 
 			var updatePlayer = function(dt) {
 				var position = em.getComponent(player, Position);
 				var v = em.getComponent(player, Velocity);
-				v.x = 0;
-				v.y = 0;
 				if ((keys[65] || keys[37]) && position.x > 0) v.x -= MOVEMENT_SPEED;
 				if ((keys[83] || keys[40]) && position.y > 0) v.y -= MOVEMENT_SPEED;
 				if ((keys[68] || keys[39]) && position.x < virtualWidth) v.x += MOVEMENT_SPEED;
 				if ((keys[87] || keys[38]) && position.y < virtualHeight) v.y += MOVEMENT_SPEED;
+				v.x = Math.max(-MOVEMENT_SPEED, Math.min(v.x, MOVEMENT_SPEED));
+				v.y = Math.max(-MOVEMENT_SPEED, Math.min(v.y, MOVEMENT_SPEED));
+				var nx = position.x + v.x * dt, ny = position.y + v.y * dt;
+				if (nx > 0 && nx < virtualWidth) position.x += v.x * dt;
+				if (ny > 0 && ny < virtualHeight) position.y += v.y * dt;
+				v.x = 0;
+				v.y = 0;
 			};
 			var spawnEnemy = function(x, y, direction, dt) {
 				var options = {
 					position: new THREE.Vector3(),
-					positionRandomness: 30,
+					positionRandomness: 50,
 					velocity: new THREE.Vector3(),
 					velocityRandomness: 4000,
 					color: 0x7C0A02,
 					colorRandomness: .2,
-					turbulence: 5,
-					lifetime: 5,
-					size: 10,
+					turbulence: 3,
+					lifetime: 4,
+					size: 20,
 					sizeRandomness: 10
 				};
 				var enemy = em.createEntity();
@@ -161,11 +159,11 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest"],
 				var speed = 0.165;
 				direction = direction * Math.PI / 180;
 				em.addComponent(enemy, new Velocity(Math.cos(direction) * speed, Math.sin(direction) * speed));
-				em.addComponent(enemy, new Emitter(options, 50));
+				em.addComponent(enemy, new Emitter(options, 5));
 				em.addComponent(enemy, new Enemy());
 				em.addComponent(enemy, new Lifetime(8000));
 			};
-			// spawnEnemy(300, 300, 0, 1);
+
 			var enemyTimer = 0;
 			var updateEnemies = function(dt) {
 				enemyTimer += dt;
@@ -202,18 +200,14 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest"],
 					position.y += velocity.y * dt;
 				}, Position, Velocity);
 			};
-			var updatePositions = function() {
-				em.each(function(entity) {
+			var updatePosition = function(entity) {
 					var position = em.getComponent(entity, Position),
 					object = em.getComponent(entity, THREEObject);
 					object.object.position.set(position.x, position.y, 0);
-				}, Position, THREEObject);
 			};
 			var circleIntersection = function(x1, y1, radius1, x2, y2, radius2) {
 				var dx = x2 - x1, dy = y2 - y1, radii = radius1 + radius2;
 				return dx * dx + dy * dy < radii * radii;
-			};
-			var decreaseLife = function(entity) {
 			};
 			var detectCollisions = function() {
 				em.each(function(entity) {
@@ -242,7 +236,7 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest"],
 				updatePlayer(dt);
 				updateEnemies(dt);
 				updateVelocities(dt);
-				updatePositions();
+				em.each(updatePosition, Position, THREEObject);
 				detectCollisions();
 				em.each(function(entity) {
 					var lifetime = em.getComponent(entity, Lifetime);
