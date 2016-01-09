@@ -20,25 +20,32 @@ requirejs.config({
 			exports: "SPE"
 		},
 		"three/GlitchPass": {
-			deps: ["three"]
+			deps: ["three"],
+			exports: "window"
 		},
 		"three/MaskPass": {
-			deps: ["three"]
+			deps: ["three"],
+			exports: "window"
 		},
 		"three/RenderPass": {
-			deps: ["three"]
+			deps: ["three"],
+			exports: "window"
 		},
 		"three/ShaderPass": {
-			deps: ["three"]
+			deps: ["three"],
+			exports: "window"
 		},
 		"shaders/CopyShader": {
-			deps: ["three"]
+			deps: ["three"],
+			exports: "window"
 		},
 		"shaders/DigitalGlitch": {
-			deps: ["three"]
+			deps: ["three"],
+			exports: "window"
 		},
 		"EffectComposer": {
-			deps: ["three", "three/GlitchPass", "three/MaskPass", "three/RenderPass", "three/ShaderPass", "shaders/CopyShader", "shaders/DigitalGlitch"]
+			deps: ["three", "three/GlitchPass", "three/MaskPass", "three/RenderPass", "three/ShaderPass", "shaders/CopyShader", "shaders/DigitalGlitch"],
+			exports: "window"
 		}
 	}
 });
