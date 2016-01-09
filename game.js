@@ -1,5 +1,5 @@
-define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest"],
-		function(THREE, fowl, Stats, GPUParticleSystem, spheretest) {
+define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComposer"],
+		function(THREE, fowl, Stats, GPUParticleSystem, spheretest, effect) {
 			var scene = new THREE.Scene();
 			// var camera = new THREE.OrthographicCamera(0, window.innerWidth, window.innerHeight, 0, -1, 1);
 			var virtualWidth = 800, virtualHeight = 600, targetAspectRatio = virtualWidth / virtualHeight;
@@ -31,6 +31,12 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest"],
 			window.addEventListener("keyup", function(e) {
 				keys[e.keyCode] = false;
 			});
+
+			var composer = new THREE.EffectComposer(renderer);
+			composer.addPass( new THREE.RenderPass( scene, camera ) );
+			glitchPass = new THREE.GlitchPass();
+			glitchPass.renderToScreen = true;
+			composer.addPass( glitchPass );
 
 			var generateSprite = function() {
 				var canvas = document.createElement( 'canvas' );
@@ -145,12 +151,13 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest"],
 					position: new THREE.Vector3(),
 					positionRandomness: 50,
 					velocity: new THREE.Vector3(),
-					velocityRandomness: 4000,
-					color: 0x7C0A02,
+					// velocityRandomness: 4000,
+					velocityRandomness: 0,
+					color: 0x1BE215,
 					colorRandomness: .2,
 					turbulence: 3,
 					lifetime: 4,
-					size: 20,
+					size: 50,
 					sizeRandomness: 10
 				};
 				var enemy = em.createEntity();
@@ -159,7 +166,7 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest"],
 				var speed = 0.165;
 				direction = direction * Math.PI / 180;
 				em.addComponent(enemy, new Velocity(Math.cos(direction) * speed, Math.sin(direction) * speed));
-				em.addComponent(enemy, new Emitter(options, 5));
+				em.addComponent(enemy, new Emitter(options, 1));
 				em.addComponent(enemy, new Enemy());
 				em.addComponent(enemy, new Lifetime(8000));
 			};
@@ -223,7 +230,7 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest"],
 			};
 
 			var draw = function() {
-				renderer.render(scene, camera);
+				composer.render(); // renderer.render(scene, camera);
 			};
 
 			var lastTime, tick = 0;

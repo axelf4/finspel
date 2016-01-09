@@ -1,7 +1,8 @@
 requirejs.config({
 	paths: {
 		"THREE": "three",
-		"SPE": "SPE.min"
+		"SPE": "SPE.min",
+		"EffectComposer": "three/EffectComposer"
 	},
 	shim: {
 		"fowl": {
@@ -17,6 +18,9 @@ requirejs.config({
 		"SPE": {
 			deps: ["three"],
 			exports: "SPE"
+		},
+		"EffectComposer": {
+			deps: ["three/GlitchPass", "three/MaskPass", "three/RenderPass", "three/ShaderPass", "shaders/CopyShader", "shaders/DigitalGlitch"]
 		}
 	}
 });
