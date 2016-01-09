@@ -20,7 +20,7 @@ requirejs.config({
 			exports: "SPE"
 		},
 		"EffectComposer": {
-			deps: ["three/GlitchPass", "three/MaskPass", "three/RenderPass", "three/ShaderPass", "shaders/CopyShader", "shaders/DigitalGlitch"]
+			deps: ["three", "three/GlitchPass", "three/MaskPass", "three/RenderPass", "three/ShaderPass", "shaders/CopyShader", "shaders/DigitalGlitch"]
 		}
 	}
 });
