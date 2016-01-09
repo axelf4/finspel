@@ -15,6 +15,8 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 
 			var composer = new THREE.EffectComposer(renderer);
 			composer.addPass( new THREE.RenderPass( scene, camera ) );
+			dotScreenPass = new THREE.DotScreenPass();
+			// composer.addPass(dotScreenPass);
 			glitchPass = new THREE.GlitchPass();
 			glitchPass.renderToScreen = true;
 			composer.addPass( glitchPass );
@@ -146,7 +148,7 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 					color: 0xaa88ff,
 					colorRandomness: .2,
 					turbulence: .5,
-					lifetime: 1.5,
+					lifetime: 0.8,
 					size: 10,
 					sizeRandomness: 2
 				};
@@ -155,7 +157,7 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 				em.addComponent(player, new Position(virtualWidth / 2, virtualHeight / 2));
 				em.addComponent(player, new LastPosition());
 				em.addComponent(player, new THREEObject(squareMesh));
-				em.addComponent(player, new Emitter(options, 50));
+				em.addComponent(player, new Emitter(options, 40));
 				return player;
 			};
 
@@ -179,7 +181,7 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 					color: 0x1BE215,
 					colorRandomness: .2,
 					turbulence: 3,
-					lifetime: 4,
+					lifetime: 3,
 					size: 50,
 					sizeRandomness: 10
 				};
@@ -277,7 +279,7 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 				},
 				onEnter: function() {
 					particleSystem = new THREE.GPUParticleSystem({
-						maxParticles: 300000
+						maxParticles: 100000
 					});
 					scene.add(particleSystem);
 					player = createPlayer();

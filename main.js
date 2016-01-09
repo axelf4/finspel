@@ -35,6 +35,10 @@ requirejs.config({
 			deps: ["three"],
 			exports: "window"
 		},
+		"three/DotScreenPass": {
+			deps: ["three"],
+			exports: "window"
+		},
 		"shaders/CopyShader": {
 			deps: ["three"],
 			exports: "window"
@@ -43,8 +47,12 @@ requirejs.config({
 			deps: ["three"],
 			exports: "window"
 		},
+		"shaders/DotScreenShader": {
+			deps: ["three"],
+			exports: "window"
+		},
 		"EffectComposer": {
-			deps: ["three", "three/GlitchPass", "three/MaskPass", "three/RenderPass", "three/ShaderPass", "shaders/CopyShader", "shaders/DigitalGlitch"],
+			deps: ["three", "three/GlitchPass", "three/MaskPass", "three/RenderPass", "three/ShaderPass", "three/DotScreenPass", "shaders/CopyShader", "shaders/DigitalGlitch", "shaders/DotScreenShader"],
 			exports: "window"
 		}
 	}
