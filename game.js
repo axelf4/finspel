@@ -13,12 +13,21 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 			document.body.appendChild(stats.domElement);
 
 			var composer = new THREE.EffectComposer(renderer);
-			composer.addPass( new THREE.RenderPass( scene, camera ) );
-			dotScreenPass = new THREE.DotScreenPass();
-			// composer.addPass(dotScreenPass);
-			glitchPass = new THREE.GlitchPass();
-			glitchPass.renderToScreen = true;
-			composer.addPass( glitchPass );
+			var effectBuilders = [];
+			var addEffectBuilder = function(builder) {
+				effectBuilders.push(builder);
+			};
+			var buildEffects = function() {
+				composer.passes = [];
+				composer.addPass( new THREE.RenderPass( scene, camera ) );
+
+				for (var i = 0; i < effectBuilders.length; i++) effectBuilders[i](composer);
+
+				glitchPass = new THREE.GlitchPass();
+				glitchPass.renderToScreen = true;
+				composer.addPass( glitchPass );
+			};
+			buildEffects();
 
 			var onResize = function() {
 				var width = window.innerWidth, height = Math.ceil(width / targetAspectRatio);
@@ -40,14 +49,14 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 				keys[e.keyCode] = false;
 			});
 
-			fowl.registerComponents(Position, LastPosition, Velocity, THREEObject, Emitter, Enemy, Lifetime, CircleShape);
+			fowl.registerComponents(Position, LastPosition, Velocity, THREEObject, Emitter, Enemy, Lifetime, CircleShape, PowerupComponent);
 
 			var stateManager = new StateManager(), textRenderer = new TextRenderer();
 			scene.add(textRenderer.getMesh());
 
 			var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 			var loadAudio = function(path, onload) {
-				ajaxRequest = new XMLHttpRequest();
+				var ajaxRequest = new XMLHttpRequest();
 				ajaxRequest.open('GET', path, true);
 				ajaxRequest.responseType = 'arraybuffer';
 
@@ -73,6 +82,9 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 			var sounds = {};
 			loadAudio("resources/Allahu Akbar.wav", function(source) {
 				sounds.dieSound = source;
+			});
+			loadAudio("resources/Slow Motion Sound Effect 1.ogg", function(source) {
+				sounds.slowmo = source;
 			});
 
 			// window.onbeforeunload = function() { return "Fukc yo sweet mama.\n If yu leave i kill you." };
@@ -125,6 +137,8 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 					stateManager: stateManager,
 					playAudio: playAudio,
 					sounds: sounds,
-					openLink: openLink
+					openLink: openLink,
+					buildEffects: buildEffects,
+					addEffectBuilder: addEffectBuilder
 			};
 		});

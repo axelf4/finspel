@@ -1,5 +1,5 @@
-define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants", "MainMenuState"],
-		function(THREE, fowl, GPUParticleSystem, game, components, constants, MainMenuState) {
+define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants", "MainMenuState", "EffectComposer"],
+		function(THREE, fowl, GPUParticleSystem, game, components, constants, MainMenuState, EffectComposer) {
 			var em; // TODO remove
 			var createPlayer = function() {
 				var options = {
@@ -22,17 +22,25 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				return player;
 			};
 
+			var powerupType = {
+				SLOWMO: {
+					duration: 8000,
+					remaining: 0,
+					sound: "slowmo"
+				}
+			};
+
 			var createPowerup = function() {
 				var options = {
 					position: new THREE.Vector3(),
-					positionRandomness: 20,
+					positionRandomness: 30,
 					velocity: new THREE.Vector3(),
 					velocityRandomness: 2000,
-					color: 0x377779,
-					colorRandomness: 200,
+					color: 0x818F82,
+					colorRandomness: .3,
 					turbulence: 1,
 					lifetime: 0.5,
-					size: 10,
+					size: 15,
 					sizeRandomness: 20
 				};
 
@@ -41,7 +49,38 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				em.addComponent(powerup, new Emitter(options, 1));
 				em.addComponent(powerup, new Lifetime(4000));
 				em.addComponent(powerup, new CircleShape(14));
+				em.addComponent(powerup, new PowerupComponent(powerupType.SLOWMO));
 			};
+
+			var powerupTimer = 0;
+			var updatePowerups = function(dt) {
+				var dirty = false;
+				for (var key in powerupType) {
+					if (!powerupType.hasOwnProperty(key)) continue;
+					var old = powerupType[key].remaining;
+					if ((powerupType[key].remaining -= dt) < 0) powerupType[key].remaining = 0;
+					if (old > 0 && powerupType[key].remaining === 0 ||
+							old === powerupType[key].duration) dirty = true;
+				}
+
+				if (dirty) {
+					game.buildEffects();
+				}
+
+				powerupTimer += dt;
+				var powerupSpawnRate = 15000;
+				if (powerupTimer > powerupSpawnRate) {
+					powerupTimer = 0;
+					createPowerup();
+				}
+			};
+
+			game.addEffectBuilder(function(composer) {
+				if (powerupType.SLOWMO.remaining > 0) {
+					dotScreenPass = new THREE.DotScreenPass();
+					composer.addPass(dotScreenPass);
+				}
+			});
 
 			var MOVEMENT_SPEED = 0.4;
 			var player;
@@ -80,7 +119,6 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 			};
 
 			var enemyTimer = 0;
-			var powerupTimer = 0;
 			var updateEnemies = function(dt) {
 				enemyTimer += dt;
 				var enemySpawnRate = 1000;
@@ -106,23 +144,25 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					}
 					spawnEnemy(x, y, direction, dt);
 				}
-
-				powerupTimer += dt;
-				var powerupSpawnRate = 4000;
-				if (powerupTimer > powerupSpawnRate) {
-					powerupTimer = 0;
-					createPowerup();
-				}
 			};
 			var updateVelocities = function(dt) {
-				em.each(function(entity) {
+				if (powerupType.SLOWMO.remaining <= 0) em.each(function(entity) {
 					var position = em.getComponent(entity, Position),
-					lastPosition = em.getComponent(entity, LastPosition),
-					velocity = em.getComponent(entity, Velocity);
-					lastPosition.x = position.x;
-					lastPosition.y = position.y;
-					position.x += velocity.x * dt;
-					position.y += velocity.y * dt;
+				   lastPosition = em.getComponent(entity, LastPosition),
+				   velocity = em.getComponent(entity, Velocity);
+				lastPosition.x = position.x;
+				lastPosition.y = position.y;
+				position.x += velocity.x * dt;
+				position.y += velocity.y * dt;
+				}, Position, Velocity);
+				else em.each(function(entity) {
+					var position = em.getComponent(entity, Position),
+					 lastPosition = em.getComponent(entity, LastPosition),
+					 velocity = em.getComponent(entity, Velocity);
+				lastPosition.x = position.x;
+				lastPosition.y = position.y;
+				position.x += velocity.x * dt / 3;
+				position.y += velocity.y * dt / 3;
 				}, Position, Velocity);
 			};
 			var updatePosition = function(entity) {
@@ -145,8 +185,11 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 						if (em.getComponent(entity, Enemy)) {
 							console.log("collision mate");
 							dead = true;
-						} else {
-							game.openLink("http://lmgtfy.com/?q=you+got+a+powerup");
+						} else if (em.getComponent(entity, PowerupComponent)) {
+							if (Math.random() < 0.02) game.openLink("http://lmgtfy.com/?q=you+got+a+powerup");
+							var powerupType = em.getComponent(entity, PowerupComponent).type;
+							powerupType.remaining += powerupType.duration;
+							if (game.sounds[powerupType.sound]) game.playAudio(game.sounds[powerupType.sound]);
 							em.removeEntity(entity);
 						}
 					}
@@ -186,6 +229,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					this.drawScore(this.score);
 					this.oldScore = this.score;
 				}
+				updatePowerups(dt);
 				updatePlayer(dt);
 				updateEnemies(dt);
 				updateVelocities(dt);

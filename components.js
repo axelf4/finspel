@@ -31,3 +31,8 @@ var Lifetime = function(life) {
 var CircleShape = function(radius) {
 	this.radius = radius;
 };
+
+// TODO rename to Powerup
+var PowerupComponent = function(type) {
+	this.type = type;
+};
