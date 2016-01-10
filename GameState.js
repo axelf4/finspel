@@ -186,7 +186,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 							console.log("collision mate");
 							dead = true;
 						} else if (em.getComponent(entity, PowerupComponent)) {
-							if (Math.random() < 0.02) game.openLink("http://lmgtfy.com/?q=you+got+a+powerup");
+							// if (Math.random() < 0.02) game.openLink("http://lmgtfy.com/?q=you+got+a+powerup");
 							var powerupType = em.getComponent(entity, PowerupComponent).type;
 							powerupType.remaining += powerupType.duration;
 							if (game.sounds[powerupType.sound]) game.playAudio(game.sounds[powerupType.sound]);
