@@ -55,9 +55,7 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 				ajaxRequest.onload = function() {
 					var audioData = ajaxRequest.response;
 					audioCtx.decodeAudioData(audioData, function(buffer) {
-						var soundSource = audioCtx.createBufferSource();
-						soundSource.buffer = buffer;
-						onload(soundSource);
+						onload(buffer);
 					}, function(e) {"Error with decoding audio data" + e.err});
 					//soundSource.connect(audioCtx.destination);
 					//soundSource.loop = true;
@@ -65,10 +63,15 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 				}
 				ajaxRequest.send();
 			};
+			var playAudio = function(buffer) {
+				var source = audioCtx.createBufferSource();
+				source.buffer = buffer;
+				source.connect(audioCtx.destination);
+				source.start();
+			};
 
 			var sounds = {};
 			loadAudio("resources/Allahu Akbar.wav", function(source) {
-				source.connect(audioCtx.destination);
 				sounds.dieSound = source;
 			});
 
@@ -113,6 +116,7 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 					scene: scene,
 					textRenderer: textRenderer,
 					stateManager: stateManager,
+					playAudio: playAudio,
 					sounds: sounds
 			};
 		});

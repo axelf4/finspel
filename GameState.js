@@ -155,7 +155,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				updateVelocities(dt);
 				em.each(updatePosition, Position, THREEObject);
 				if (detectCollisions()) {
-					game.sounds.dieSound.start();
+					game.playAudio(game.sounds.dieSound);
 					game.stateManager.setScene(new MainMenuState(GameState, this.score));
 				}
 				em.each(function(entity) {
