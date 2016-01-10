@@ -1,8 +1,12 @@
 requirejs.config({
 	paths: {
-		"THREE": "three",
-		"SPE": "SPE.min",
-		"EffectComposer": "three/EffectComposer"
+		"fowl": "lib/fowl",
+		"THREE": "lib/three",
+		"three": "lib/three",
+		"stats": "lib/stats",
+		"GPUParticleSystem": "lib/GPUParticleSystem",
+		"SPE": "lib/SPE.min",
+		"EffectComposer": "scripts/EffectComposer"
 	},
 	shim: {
 		"fowl": {
@@ -19,23 +23,23 @@ requirejs.config({
 			deps: ["three"],
 			exports: "SPE"
 		},
-		"three/GlitchPass": {
+		"scripts/GlitchPass": {
 			deps: ["three"],
 			exports: "window"
 		},
-		"three/MaskPass": {
+		"scripts/MaskPass": {
 			deps: ["three"],
 			exports: "window"
 		},
-		"three/RenderPass": {
+		"scripts/RenderPass": {
 			deps: ["three"],
 			exports: "window"
 		},
-		"three/ShaderPass": {
+		"scripts/ShaderPass": {
 			deps: ["three"],
 			exports: "window"
 		},
-		"three/DotScreenPass": {
+		"scripts/DotScreenPass": {
 			deps: ["three"],
 			exports: "window"
 		},
@@ -52,12 +56,16 @@ requirejs.config({
 			exports: "window"
 		},
 		"EffectComposer": {
-			deps: ["three", "three/GlitchPass", "three/MaskPass", "three/RenderPass", "three/ShaderPass", "three/DotScreenPass", "shaders/CopyShader", "shaders/DigitalGlitch", "shaders/DotScreenShader"],
+			deps: ["three", "scripts/GlitchPass", "scripts/MaskPass", "scripts/RenderPass", "scripts/ShaderPass", "scripts/DotScreenPass", "shaders/CopyShader", "shaders/DigitalGlitch", "shaders/DotScreenShader"],
+			exports: "window"
+		},
+		"components": {
 			exports: "window"
 		}
 	}
 });
-requirejs(["game"], function(game) {
+requirejs(["game", "GameState"], function(game, GameState) {
 	console.log("hello");
-	game.start();
+	game.stateManager.setScene(new GameState());
+	game.update();
 });
