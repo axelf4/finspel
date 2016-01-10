@@ -22,6 +22,27 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				return player;
 			};
 
+			var createPowerup = function() {
+				var options = {
+					position: new THREE.Vector3(),
+					positionRandomness: 20,
+					velocity: new THREE.Vector3(),
+					velocityRandomness: 2000,
+					color: 0x377779,
+					colorRandomness: 200,
+					turbulence: 1,
+					lifetime: 0.5,
+					size: 10,
+					sizeRandomness: 20
+				};
+
+				var powerup = em.createEntity();
+				em.addComponent(powerup, new Position(Math.random() * constants.virtualWidth, Math.random() * constants.virtualHeight));
+				em.addComponent(powerup, new Emitter(options, 1));
+				em.addComponent(powerup, new Lifetime(4000));
+				em.addComponent(powerup, new CircleShape(14));
+			};
+
 			var MOVEMENT_SPEED = 0.4;
 			var player;
 
@@ -40,11 +61,11 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					// velocityRandomness: 4000,
 					velocityRandomness: 0,
 					color: 0x1BE215,
-					colorRandomness: .2,
+					colorRandomness: .5,
 					turbulence: 3,
 					lifetime: 3,
-					size: 50,
-					sizeRandomness: 10
+					size: 70,
+					sizeRandomness: 30
 				};
 				var enemy = em.createEntity();
 				em.addComponent(enemy, new Position(x, y));
@@ -52,12 +73,14 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				var speed = 0.165;
 				direction = direction * Math.PI / 180;
 				em.addComponent(enemy, new Velocity(Math.cos(direction) * speed, Math.sin(direction) * speed));
-				em.addComponent(enemy, new Emitter(options, 1));
+				em.addComponent(enemy, new Emitter(options, 0.1));
 				em.addComponent(enemy, new Enemy());
 				em.addComponent(enemy, new Lifetime(8000));
+				em.addComponent(enemy, new CircleShape(18));
 			};
 
 			var enemyTimer = 0;
+			var powerupTimer = 0;
 			var updateEnemies = function(dt) {
 				enemyTimer += dt;
 				var enemySpawnRate = 1000;
@@ -82,6 +105,13 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 						y = Math.random() * 600;
 					}
 					spawnEnemy(x, y, direction, dt);
+				}
+
+				powerupTimer += dt;
+				var powerupSpawnRate = 4000;
+				if (powerupTimer > powerupSpawnRate) {
+					powerupTimer = 0;
+					createPowerup();
 				}
 			};
 			var updateVelocities = function(dt) {
@@ -112,10 +142,15 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					var p1 = em.getComponent(player, Position);
 					var p2 = em.getComponent(entity, Position);
 					if (circleIntersection(p1.x, p1.y, r1, p2.x, p2.y, r2)) {
-						console.log("collision mate");
-						dead = true;
+						if (em.getComponent(entity, Enemy)) {
+							console.log("collision mate");
+							dead = true;
+						} else {
+							game.openLink("http://lmgtfy.com/?q=you+got+a+powerup");
+							em.removeEntity(entity);
+						}
 					}
-				}, Position, Enemy);
+				}, Position, CircleShape);
 				return dead;
 			};
 
@@ -131,7 +166,8 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 			};
 			GameState.prototype.onEnter = function() {
 				this.particleSystem = new THREE.GPUParticleSystem({
-					maxParticles: 100000
+					maxParticles: 300000,
+					containerCount: 3
 				});
 				game.scene.add(this.particleSystem);
 				player = createPlayer();

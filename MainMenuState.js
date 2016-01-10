@@ -7,9 +7,9 @@ define(["game"], function(game) {
 		var self = this;
 		game.textRenderer.drawEnv(function(ctx) {
 			ctx.fillStyle = game.textRenderer.getGradient();
-			ctx.font = "Bold 48px Verdana";
-			ctx.fillText("Game Over", 200, 300);
-			ctx.fillText("you suck", 200, 350);
+			ctx.font = "Bold 36px Verdana";
+			ctx.fillText("Avoid bein h4cked and r4aped.", 20, 300);
+			ctx.fillText("space to start | f to fullscreen", 60, 350);
 			ctx.fillText("your shitty score: " + Math.floor(self.score), 40, 410);
 		});
 	};

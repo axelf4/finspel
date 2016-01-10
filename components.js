@@ -27,3 +27,7 @@ var Enemy = function() {};
 var Lifetime = function(life) {
 	this.life = life;
 };
+
+var CircleShape = function(radius) {
+	this.radius = radius;
+};

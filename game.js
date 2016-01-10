@@ -40,7 +40,7 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 				keys[e.keyCode] = false;
 			});
 
-			fowl.registerComponents(Position, LastPosition, Velocity, THREEObject, Emitter, Enemy, Lifetime);
+			fowl.registerComponents(Position, LastPosition, Velocity, THREEObject, Emitter, Enemy, Lifetime, CircleShape);
 
 			var stateManager = new StateManager(), textRenderer = new TextRenderer();
 			scene.add(textRenderer.getMesh());
@@ -74,6 +74,13 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 			loadAudio("resources/Allahu Akbar.wav", function(source) {
 				sounds.dieSound = source;
 			});
+
+			// window.onbeforeunload = function() { return "Fukc yo sweet mama.\n If yu leave i kill you." };
+
+			var openLink = function(url) {
+				var win = window.open(url, '_blank');
+				win.focus();
+			};
 
 			var blurred = false;
 			window.onblur = function() {
@@ -117,6 +124,7 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 					textRenderer: textRenderer,
 					stateManager: stateManager,
 					playAudio: playAudio,
-					sounds: sounds
+					sounds: sounds,
+					openLink: openLink
 			};
 		});
