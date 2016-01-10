@@ -40,11 +40,37 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 				keys[e.keyCode] = false;
 			});
 
-
 			fowl.registerComponents(Position, LastPosition, Velocity, THREEObject, Emitter, Enemy, Lifetime);
 
 			var stateManager = new StateManager(), textRenderer = new TextRenderer();
 			scene.add(textRenderer.getMesh());
+
+			var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+			var loadAudio = function(path, onload) {
+				ajaxRequest = new XMLHttpRequest();
+				ajaxRequest.open('GET', path, true);
+				ajaxRequest.responseType = 'arraybuffer';
+
+				var self = this;
+				ajaxRequest.onload = function() {
+					var audioData = ajaxRequest.response;
+					audioCtx.decodeAudioData(audioData, function(buffer) {
+						var soundSource = audioCtx.createBufferSource();
+						soundSource.buffer = buffer;
+						onload(soundSource);
+					}, function(e) {"Error with decoding audio data" + e.err});
+					//soundSource.connect(audioCtx.destination);
+					//soundSource.loop = true;
+					//soundSource.start();
+				}
+				ajaxRequest.send();
+			};
+
+			var sounds = {};
+			loadAudio("resources/Allahu Akbar.wav", function(source) {
+				source.connect(audioCtx.destination);
+				sounds.dieSound = source;
+			});
 
 			var blurred = false;
 			window.onblur = function() {
@@ -83,9 +109,10 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 
 			return {
 				update: update,
-				keys: keys,
-				scene: scene,
-				textRenderer: textRenderer,
-				stateManager: stateManager
+					keys: keys,
+					scene: scene,
+					textRenderer: textRenderer,
+					stateManager: stateManager,
+					sounds: sounds
 			};
 		});

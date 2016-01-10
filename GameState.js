@@ -154,7 +154,10 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				updateEnemies(dt);
 				updateVelocities(dt);
 				em.each(updatePosition, Position, THREEObject);
-				if (detectCollisions()) game.stateManager.setScene(new MainMenuState(GameState, this.score));
+				if (detectCollisions()) {
+					game.sounds.dieSound.start();
+					game.stateManager.setScene(new MainMenuState(GameState, this.score));
+				}
 				em.each(function(entity) {
 					var lifetime = em.getComponent(entity, Lifetime);
 					lifetime.life -= dt;
