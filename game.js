@@ -17,14 +17,14 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 			var addEffectBuilder = function(builder) {
 				effectBuilders.push(builder);
 			};
+			var glitchPass = new THREE.GlitchPass();
+			glitchPass.renderToScreen = true;
 			var buildEffects = function() {
 				composer.passes = [];
 				composer.addPass( new THREE.RenderPass( scene, camera ) );
 
 				for (var i = 0; i < effectBuilders.length; i++) effectBuilders[i](composer);
 
-				glitchPass = new THREE.GlitchPass();
-				glitchPass.renderToScreen = true;
 				composer.addPass( glitchPass );
 			};
 			buildEffects();
@@ -86,6 +86,9 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 			loadAudio("resources/Slow Motion Sound Effect 1.ogg", function(source) {
 				sounds.slowmo = source;
 			});
+			loadAudio("resources/sundowner-im-fucking-invincible-voice-only.mp3", function(source) {
+				sounds.invincible = source;
+			});
 
 			// window.onbeforeunload = function() { return "Fukc yo sweet mama.\n If yu leave i kill you." };
 
@@ -139,6 +142,7 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 					sounds: sounds,
 					openLink: openLink,
 					buildEffects: buildEffects,
-					addEffectBuilder: addEffectBuilder
+					addEffectBuilder: addEffectBuilder,
+					glitchPass: glitchPass
 			};
 		});

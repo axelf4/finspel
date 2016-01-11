@@ -27,8 +27,14 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					duration: 8000,
 					remaining: 0,
 					sound: "slowmo"
+				},
+				INVINCIBILITY: {
+					duration: 6000,
+					remaining: 0,
+					sound: "invincible"
 				}
 			};
+			var INVINCIBILITY_DECLOAK_TIME = 3000;
 
 			var createPowerup = function() {
 				var options = {
@@ -49,7 +55,11 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				em.addComponent(powerup, new Emitter(options, 1));
 				em.addComponent(powerup, new Lifetime(4000));
 				em.addComponent(powerup, new CircleShape(14));
-				em.addComponent(powerup, new PowerupComponent(powerupType.SLOWMO));
+				var type;
+				if (Math.random() > 0.5) {
+					type = powerupType.SLOWMO;
+				} else type = powerupType.INVINCIBILITY;
+				em.addComponent(powerup, new PowerupComponent(type));
 			};
 
 			var powerupTimer = 0;
@@ -61,11 +71,11 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					if ((powerupType[key].remaining -= dt) < 0) powerupType[key].remaining = 0;
 					if (old > 0 && powerupType[key].remaining === 0 ||
 							old === powerupType[key].duration) dirty = true;
+					if (powerupType[key] === powerupType.INVINCIBILITY) {
+						if (old > INVINCIBILITY_DECLOAK_TIME && powerupType[key].remaining < INVINCIBILITY_DECLOAK_TIME) dirty = true;
+					}
 				}
-
-				if (dirty) {
-					game.buildEffects();
-				}
+				if (dirty) game.buildEffects();
 
 				powerupTimer += dt;
 				var powerupSpawnRate = 15000;
@@ -80,6 +90,9 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					dotScreenPass = new THREE.DotScreenPass();
 					composer.addPass(dotScreenPass);
 				}
+				game.glitchPass.goWild = powerupType.INVINCIBILITY.remaining > 0;
+				em.getComponent(player, Emitter).enabled = powerupType.INVINCIBILITY.remaining < INVINCIBILITY_DECLOAK_TIME;
+				if (powerupType.INVINCIBILITY.remaining > 0) {}
 			});
 
 			var MOVEMENT_SPEED = 0.4;
@@ -183,13 +196,14 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					var p2 = em.getComponent(entity, Position);
 					if (circleIntersection(p1.x, p1.y, r1, p2.x, p2.y, r2)) {
 						if (em.getComponent(entity, Enemy)) {
+							if (powerupType.INVINCIBILITY.remaining > 0) return;
 							console.log("collision mate");
 							dead = true;
 						} else if (em.getComponent(entity, PowerupComponent)) {
 							// if (Math.random() < 0.02) game.openLink("http://lmgtfy.com/?q=you+got+a+powerup");
-							var powerupType = em.getComponent(entity, PowerupComponent).type;
-							powerupType.remaining += powerupType.duration;
-							if (game.sounds[powerupType.sound]) game.playAudio(game.sounds[powerupType.sound]);
+							var type = em.getComponent(entity, PowerupComponent).type;
+							type.remaining += type.duration;
+							if (game.sounds[type.sound]) game.playAudio(game.sounds[type.sound]);
 							em.removeEntity(entity);
 						}
 					}
@@ -208,6 +222,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				});
 			};
 			GameState.prototype.onEnter = function() {
+				em.clear();
 				this.particleSystem = new THREE.GPUParticleSystem({
 					maxParticles: 300000,
 					containerCount: 3
@@ -217,7 +232,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				this.drawScore(this.oldScore = this.score = 0);
 			};
 			GameState.prototype.onLeave = function() {
-				em.clear();
+				game.buildEffects();
 				game.scene.remove(this.particleSystem);
 			};
 			GameState.prototype.draw = function() {
@@ -246,6 +261,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				em.each(function(entity) {
 					var position = em.getComponent(entity, Position),
 					emitter = em.getComponent(entity, Emitter);
+				if (!emitter.enabled) return;
 				emitter.options.position.x = position.x;
 				emitter.options.position.y = position.y;
 				var count = Math.min(2000, emitter.spawnRate * dt);

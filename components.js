@@ -20,6 +20,7 @@ var THREEObject = function(object) {
 var Emitter = function(options, spawnRate) {
 	this.options = options;
 	this.spawnRate = spawnRate;
+	this.enabled = true;
 };
 
 var Enemy = function() {};
