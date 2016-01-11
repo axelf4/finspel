@@ -34,7 +34,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					sound: "invincible"
 				}
 			};
-			var INVINCIBILITY_DECLOAK_TIME = 3000;
+			var INVINCIBILITY_DECLOAK_TIME = 3500;
 
 			var createPowerup = function() {
 				var options = {
@@ -167,7 +167,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				lastPosition.y = position.y;
 				position.x += velocity.x * dt;
 				position.y += velocity.y * dt;
-				}, Position, Velocity);
+				}, Position, LastPosition, Velocity);
 				else em.each(function(entity) {
 					var position = em.getComponent(entity, Position),
 					 lastPosition = em.getComponent(entity, LastPosition),
@@ -176,7 +176,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				lastPosition.y = position.y;
 				position.x += velocity.x * dt / 3;
 				position.y += velocity.y * dt / 3;
-				}, Position, Velocity);
+				}, Position, LastPosition, Velocity);
 			};
 			var updatePosition = function(entity) {
 					var position = em.getComponent(entity, Position),
@@ -195,11 +195,11 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					var p1 = em.getComponent(player, Position);
 					var p2 = em.getComponent(entity, Position);
 					if (circleIntersection(p1.x, p1.y, r1, p2.x, p2.y, r2)) {
-						if (em.getComponent(entity, Enemy)) {
+						if (em.hasComponent(entity, Enemy)) {
 							if (powerupType.INVINCIBILITY.remaining > 0) return;
 							console.log("collision mate");
 							dead = true;
-						} else if (em.getComponent(entity, PowerupComponent)) {
+						} else if (em.hasComponent(entity, PowerupComponent)) {
 							// if (Math.random() < 0.02) game.openLink("http://lmgtfy.com/?q=you+got+a+powerup");
 							var type = em.getComponent(entity, PowerupComponent).type;
 							type.remaining += type.duration;

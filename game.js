@@ -116,6 +116,9 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 				hidden = "webkitHidden";
 				visibilityChange = "webkitvisibilitychange";
 			}
+			document.addEventListener("visibilitychange", function() {
+				if (document.hidden) blurred = true;
+			}, false);
 
 			var lastTime, tick = 0;
 			var update = function(time) {
