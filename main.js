@@ -1,6 +1,6 @@
 requirejs.config({
 	paths: {
-		"fowl": "lib/fowl",
+		"fowl": "lib/fowl.min",
 		"THREE": "lib/three",
 		"three": "lib/three",
 		"stats": "lib/stats",

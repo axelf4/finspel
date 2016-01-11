@@ -119,7 +119,7 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 				window.requestAnimationFrame(update);
 				var dt = time - lastTime;
 				lastTime = time;
-				if (document[hidden] || blurred || isNaN(dt)) {
+				if (document[hidden] || blurred || dt > 500 || isNaN(dt)) {
 					dt = 0;
 					blurred = false;
 				} else tick += dt / 1000;
