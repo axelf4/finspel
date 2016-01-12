@@ -136,10 +136,10 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				em.addComponent(enemy, new CircleShape(25));
 			};
 
-			var enemyTimer = 0;
+			var enemyTimer = 0, enemySpawnRate;
 			var updateEnemies = function(dt) {
 				enemyTimer += dt;
-				var enemySpawnRate = 1000;
+				enemySpawnRate -= 0.03 * dt;
 				// TODO switch to loop
 				if (enemyTimer > enemySpawnRate) {
 					if (enemyTimer - enemySpawnRate > enemySpawnRate) console.log("Enemy spawn overflow");
@@ -242,6 +242,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				game.scene.add(this.particleSystem);
 				player = createPlayer();
 				this.drawScore(this.oldScore = this.score = 0);
+				enemySpawnRate = 1000;
 			};
 			GameState.prototype.onLeave = function() {
 				for (var key in powerupType) powerupType[key].remaining = 0;
