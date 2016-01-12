@@ -1,5 +1,5 @@
-define(["three", "fowl", "stats", "GPUParticleSystem", "EffectComposer", "components", "StateManager", "TextRenderer"],
-		function(THREE, fowl, Stats, GPUParticleSystem, effect, components, StateManager, TextRenderer) {
+define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "StateManager", "TextRenderer"],
+		function(THREE, fowl, GPUParticleSystem, effect, components, StateManager, TextRenderer) {
 			var scene = new THREE.Scene();
 			var virtualWidth = 800, virtualHeight = 600, targetAspectRatio = virtualWidth / virtualHeight;
 			var camera = new THREE.OrthographicCamera(0, virtualWidth, virtualHeight, 0, -1, 1);
@@ -7,10 +7,6 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "EffectComposer", "compon
 			renderer.setSize(virtualWidth, virtualHeight); // renderer.setSize(window.innerWidth, window.innerHeight);
 			renderer.setClearColor(0x000000, 1);
 			document.body.appendChild(renderer.domElement);
-			var stats = new Stats();
-			stats.domElement.style.position = 'absolute';
-			stats.domElement.style.top = '0px';
-			document.body.appendChild(stats.domElement);
 
 			var composer = new THREE.EffectComposer(renderer);
 			var effectBuilders = [];
@@ -135,7 +131,6 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "EffectComposer", "compon
 				stateManager.getScene().update(dt, tick);
 				stateManager.getScene().draw();
 				composer.render(); // renderer.render(scene, camera);
-				stats.update();
 			};
 
 			return {
