@@ -200,7 +200,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					var movevec = new THREE.Vector2(playerVelocity.x, playerVelocity.y);
 					if (em.hasComponent(entity, Velocity)) {
 						var entityVelocity = em.getComponent(entity, Velocity);
-						movevec.add(new THREE.Vector2(entityVelocity.x, entityVelocity.y));
+						movevec.sub(new THREE.Vector2(entityVelocity.x, entityVelocity.y));
 					}
 					if (circleCollision(pos1, pos2, radius1, radius2, movevec)) {
 						if (em.hasComponent(entity, Enemy)) {
