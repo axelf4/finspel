@@ -4,22 +4,22 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 			var createPlayer = function() {
 				var options = {
 					position: new THREE.Vector3(),
-					positionRandomness: 1,
-					velocity: new THREE.Vector3(10),
-					velocityRandomness: 50,
+					positionRandomness: 5,
+					velocity: new THREE.Vector3(),
+					velocityRandomness: 90,
 					color: 0xaa88ff,
 					colorRandomness: .2,
-					turbulence: .5,
-					lifetime: 0.8,
+					turbulence: .8,
+					lifetime: 2,
 					size: 10,
-					sizeRandomness: 2
+					sizeRandomness: 0
 				};
 
 				var player = em.createEntity();
 				em.addComponent(player, new Position(constants.virtualWidth / 2, constants.virtualHeight / 2));
 				em.addComponent(player, new LastPosition());
 				em.addComponent(player, new Velocity());
-				em.addComponent(player, new Emitter(options, 20));
+				em.addComponent(player, new Emitter(options, 5));
 				em.addComponent(player, new StayInside());
 				em.addComponent(player, new CircleShape(15));
 				return player;
@@ -98,7 +98,6 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				if (powerupType.INVINCIBILITY.remaining > 0) {}
 			});
 
-			var MOVEMENT_SPEED = 0.4;
 			var player;
 
 			var updatePlayer = function(dt) {
@@ -106,10 +105,11 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				var velocity = em.getComponent(player, Velocity);
 				velocity.x = 0;
 				velocity.y = 0;
-				if ((game.keys[65] || game.keys[37]) && position.x > 0) velocity.x -= MOVEMENT_SPEED;
-				if ((game.keys[83] || game.keys[40]) && position.y > 0) velocity.y -= MOVEMENT_SPEED;
-				if ((game.keys[68] || game.keys[39]) && position.x < constants.virtualWidth) velocity.x += MOVEMENT_SPEED;
-				if ((game.keys[87] || game.keys[38]) && position.y < constants.virtualHeight) velocity.y += MOVEMENT_SPEED;
+				var speed = 0.35;
+				if ((game.keys[65] || game.keys[37]) && position.x > 0) velocity.x -= speed;
+				if ((game.keys[83] || game.keys[40]) && position.y > 0) velocity.y -= speed;
+				if ((game.keys[68] || game.keys[39]) && position.x < constants.virtualWidth) velocity.x += speed;
+				if ((game.keys[87] || game.keys[38]) && position.y < constants.virtualHeight) velocity.y += speed;
 			};
 			var spawnEnemy = function(x, y, direction, dt) {
 				var options = {
@@ -233,7 +233,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 			GameState.prototype.onEnter = function() {
 				em.clear();
 				this.particleSystem = new THREE.GPUParticleSystem({
-					maxParticles: 300000,
+					maxParticles: 200000,
 					containerCount: 3
 				});
 				game.scene.add(this.particleSystem);
