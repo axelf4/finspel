@@ -65,7 +65,6 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				// Random type of powerup
 				var keys = Object.keys(powerupType);
 				var type = powerupType[keys[keys.length * Math.random() << 0]];
-				type = powerupType.INVINCIBILITY;
 				em.addComponent(powerup, new PowerupComponent(type));
 			};
 
@@ -237,7 +236,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 			GameState.prototype.onEnter = function() {
 				em.clear();
 				this.particleSystem = new THREE.GPUParticleSystem({
-					maxParticles: 200000,
+					maxParticles: 50000,
 					containerCount: 3
 				});
 				game.scene.add(this.particleSystem);
