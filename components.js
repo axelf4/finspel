@@ -37,3 +37,5 @@ var CircleShape = function(radius) {
 var PowerupComponent = function(type) {
 	this.type = type;
 };
+
+var StayInside = function() {};

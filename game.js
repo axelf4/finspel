@@ -1,5 +1,5 @@
-define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComposer", "components", "StateManager", "TextRenderer"],
-		function(THREE, fowl, Stats, GPUParticleSystem, spheretest, effect, components, StateManager, TextRenderer) {
+define(["three", "fowl", "stats", "GPUParticleSystem", "EffectComposer", "components", "StateManager", "TextRenderer"],
+		function(THREE, fowl, Stats, GPUParticleSystem, effect, components, StateManager, TextRenderer) {
 			var scene = new THREE.Scene();
 			var virtualWidth = 800, virtualHeight = 600, targetAspectRatio = virtualWidth / virtualHeight;
 			var camera = new THREE.OrthographicCamera(0, virtualWidth, virtualHeight, 0, -1, 1);
@@ -49,7 +49,7 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 				keys[e.keyCode] = false;
 			});
 
-			fowl.registerComponents(Position, LastPosition, Velocity, THREEObject, Emitter, Enemy, Lifetime, CircleShape, PowerupComponent);
+			fowl.registerComponents(Position, LastPosition, Velocity, THREEObject, Emitter, Enemy, Lifetime, CircleShape, PowerupComponent, StayInside);
 
 			var stateManager = new StateManager(), textRenderer = new TextRenderer();
 			scene.add(textRenderer.getMesh());
@@ -88,6 +88,9 @@ define(["three", "fowl", "stats", "GPUParticleSystem", "spheretest", "EffectComp
 			});
 			loadAudio("resources/sundowner-im-fucking-invincible-voice-only.mp3", function(source) {
 				sounds.invincible = source;
+			});
+			loadAudio("resources/EMP bomb VFX.ogg", function(source) {
+				sounds.emp = source;
 			});
 
 			// window.onbeforeunload = function() { return "Fukc yo sweet mama.\n If yu leave i kill you." };

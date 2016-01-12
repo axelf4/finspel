@@ -1,5 +1,5 @@
-define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants", "MainMenuState", "EffectComposer"],
-		function(THREE, fowl, GPUParticleSystem, game, components, constants, MainMenuState, EffectComposer) {
+define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants", "MainMenuState", "EffectComposer", "circleCollision"],
+		function(THREE, fowl, GPUParticleSystem, game, components, constants, MainMenuState, EffectComposer, circleCollision) {
 			var em; // TODO remove
 			var createPlayer = function() {
 				var options = {
@@ -18,7 +18,10 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				var player = em.createEntity();
 				em.addComponent(player, new Position(constants.virtualWidth / 2, constants.virtualHeight / 2));
 				em.addComponent(player, new LastPosition());
-				em.addComponent(player, new Emitter(options, 40));
+				em.addComponent(player, new Velocity());
+				em.addComponent(player, new Emitter(options, 20));
+				em.addComponent(player, new StayInside());
+				em.addComponent(player, new CircleShape(15));
 				return player;
 			};
 
@@ -32,33 +35,36 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					duration: 6000,
 					remaining: 0,
 					sound: "invincible"
+				},
+				NUKE: {
+					duration: 2000,
+					remaining: 0,
+					sound: "emp"
 				}
 			};
-			var INVINCIBILITY_DECLOAK_TIME = 3500;
 
 			var createPowerup = function() {
 				var options = {
 					position: new THREE.Vector3(),
-					positionRandomness: 30,
+					positionRandomness: 20,
 					velocity: new THREE.Vector3(),
-					velocityRandomness: 2000,
+					velocityRandomness: 500,
 					color: 0x818F82,
 					colorRandomness: .3,
-					turbulence: 1,
+					turbulence: 0.5,
 					lifetime: 0.5,
-					size: 15,
-					sizeRandomness: 20
+					size: 35,
+					sizeRandomness: 30
 				};
 
 				var powerup = em.createEntity();
 				em.addComponent(powerup, new Position(Math.random() * constants.virtualWidth, Math.random() * constants.virtualHeight));
-				em.addComponent(powerup, new Emitter(options, 1));
+				em.addComponent(powerup, new Emitter(options, 0.2));
 				em.addComponent(powerup, new Lifetime(4000));
-				em.addComponent(powerup, new CircleShape(14));
-				var type;
-				if (Math.random() > 0.5) {
-					type = powerupType.SLOWMO;
-				} else type = powerupType.INVINCIBILITY;
+				em.addComponent(powerup, new CircleShape(15));
+				// Random type of powerup
+				var keys = Object.keys(powerupType);
+				var type = powerupType[keys[keys.length * Math.random() << 0]];
 				em.addComponent(powerup, new PowerupComponent(type));
 			};
 
@@ -71,9 +77,6 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					if ((powerupType[key].remaining -= dt) < 0) powerupType[key].remaining = 0;
 					if (old > 0 && powerupType[key].remaining === 0 ||
 							old === powerupType[key].duration) dirty = true;
-					if (powerupType[key] === powerupType.INVINCIBILITY) {
-						if (old > INVINCIBILITY_DECLOAK_TIME && powerupType[key].remaining < INVINCIBILITY_DECLOAK_TIME) dirty = true;
-					}
 				}
 				if (dirty) game.buildEffects();
 
@@ -91,7 +94,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					composer.addPass(dotScreenPass);
 				}
 				game.glitchPass.goWild = powerupType.INVINCIBILITY.remaining > 0;
-				em.getComponent(player, Emitter).enabled = powerupType.INVINCIBILITY.remaining < INVINCIBILITY_DECLOAK_TIME;
+				em.getComponent(player, Emitter).enabled = powerupType.NUKE.remaining <= 0;
 				if (powerupType.INVINCIBILITY.remaining > 0) {}
 			});
 
@@ -100,17 +103,19 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 
 			var updatePlayer = function(dt) {
 				var position = em.getComponent(player, Position);
-				if ((game.keys[65] || game.keys[37]) && position.x > 0) position.x -= MOVEMENT_SPEED * dt;
-				if ((game.keys[83] || game.keys[40]) && position.y > 0) position.y -= MOVEMENT_SPEED * dt;
-				if ((game.keys[68] || game.keys[39]) && position.x < constants.virtualWidth) position.x += MOVEMENT_SPEED * dt;
-				if ((game.keys[87] || game.keys[38]) && position.y < constants.virtualHeight) position.y += MOVEMENT_SPEED * dt;
+				var velocity = em.getComponent(player, Velocity);
+				velocity.x = 0;
+				velocity.y = 0;
+				if ((game.keys[65] || game.keys[37]) && position.x > 0) velocity.x -= MOVEMENT_SPEED;
+				if ((game.keys[83] || game.keys[40]) && position.y > 0) velocity.y -= MOVEMENT_SPEED;
+				if ((game.keys[68] || game.keys[39]) && position.x < constants.virtualWidth) velocity.x += MOVEMENT_SPEED;
+				if ((game.keys[87] || game.keys[38]) && position.y < constants.virtualHeight) velocity.y += MOVEMENT_SPEED;
 			};
 			var spawnEnemy = function(x, y, direction, dt) {
 				var options = {
 					position: new THREE.Vector3(),
 					positionRandomness: 50,
 					velocity: new THREE.Vector3(),
-					// velocityRandomness: 4000,
 					velocityRandomness: 0,
 					color: 0x1BE215,
 					colorRandomness: .5,
@@ -128,7 +133,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				em.addComponent(enemy, new Emitter(options, 0.1));
 				em.addComponent(enemy, new Enemy());
 				em.addComponent(enemy, new Lifetime(8000));
-				em.addComponent(enemy, new CircleShape(18));
+				em.addComponent(enemy, new CircleShape(25));
 			};
 
 			var enemyTimer = 0;
@@ -159,23 +164,21 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				}
 			};
 			var updateVelocities = function(dt) {
-				if (powerupType.SLOWMO.remaining <= 0) em.each(function(entity) {
-					var position = em.getComponent(entity, Position),
-				   lastPosition = em.getComponent(entity, LastPosition),
-				   velocity = em.getComponent(entity, Velocity);
-				lastPosition.x = position.x;
-				lastPosition.y = position.y;
-				position.x += velocity.x * dt;
-				position.y += velocity.y * dt;
-				}, Position, LastPosition, Velocity);
-				else em.each(function(entity) {
-					var position = em.getComponent(entity, Position),
-					 lastPosition = em.getComponent(entity, LastPosition),
-					 velocity = em.getComponent(entity, Velocity);
-				lastPosition.x = position.x;
-				lastPosition.y = position.y;
-				position.x += velocity.x * dt / 3;
-				position.y += velocity.y * dt / 3;
+				var factor = powerupType.SLOWMO.remaining <= 0 ? 1 : 1 / 3;
+				em.each(function(entity) {
+					var position = em.getComponent(entity, Position);
+					var lastPosition = em.getComponent(entity, LastPosition);
+					var velocity = em.getComponent(entity, Velocity);
+					lastPosition.x = position.x;
+					lastPosition.y = position.y;
+					position.x += velocity.x * dt * factor;
+					position.y += velocity.y * dt * factor;
+					if (em.hasComponent(entity, StayInside)) {
+						if (position.x < 0) position.x = 0;
+						if (position.x > constants.virtualWidth) position.x = constants.virtualWidth;
+						if (position.y < 0) position.y = 0;
+						if (position.y > constants.virtualHeight) position.y = constants.virtualHeight;
+					}
 				}, Position, LastPosition, Velocity);
 			};
 			var updatePosition = function(entity) {
@@ -183,18 +186,23 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					object = em.getComponent(entity, THREEObject);
 					object.object.position.set(position.x, position.y, 0);
 			};
-			var circleIntersection = function(x1, y1, radius1, x2, y2, radius2) {
-				var dx = x2 - x1, dy = y2 - y1, radii = radius1 + radius2;
-				return dx * dx + dy * dy < radii * radii;
-			};
 			var detectCollisions = function() {
 				var dead = false;
 				em.each(function(entity) {
-					var r1 = 15;
-					var r2 = 18;
 					var p1 = em.getComponent(player, Position);
 					var p2 = em.getComponent(entity, Position);
-					if (circleIntersection(p1.x, p1.y, r1, p2.x, p2.y, r2)) {
+
+					var pos1 = new THREE.Vector2(p1.x, p1.y);
+					var pos2 = new THREE.Vector2(p2.x, p2.y);
+					var radius1 = em.getComponent(player, CircleShape).radius;
+					var radius2 = em.getComponent(entity, CircleShape).radius;
+					var playerVelocity = em.getComponent(player, Velocity);
+					var movevec = new THREE.Vector2(playerVelocity.x, playerVelocity.y);
+					if (em.hasComponent(entity, Velocity)) {
+						var entityVelocity = em.getComponent(entity, Velocity);
+						movevec.add(new THREE.Vector2(entityVelocity.x, entityVelocity.y));
+					}
+					if (circleCollision(pos1, pos2, radius1, radius2, movevec)) {
 						if (em.hasComponent(entity, Enemy)) {
 							if (powerupType.INVINCIBILITY.remaining > 0) return;
 							console.log("collision mate");
@@ -205,6 +213,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 							type.remaining += type.duration;
 							if (game.sounds[type.sound]) game.playAudio(game.sounds[type.sound]);
 							em.removeEntity(entity);
+							if (type === powerupType.NUKE) em.each(function(entity) { em.removeEntity(entity); }, Enemy);
 						}
 					}
 				}, Position, CircleShape);
@@ -232,6 +241,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				this.drawScore(this.oldScore = this.score = 0);
 			};
 			GameState.prototype.onLeave = function() {
+				for (var key in powerupType) powerupType[key].remaining = 0;
 				game.buildEffects();
 				game.scene.remove(this.particleSystem);
 			};
@@ -247,12 +257,12 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				updatePowerups(dt);
 				updatePlayer(dt);
 				updateEnemies(dt);
-				updateVelocities(dt);
-				em.each(updatePosition, Position, THREEObject);
 				if (detectCollisions()) {
 					game.playAudio(game.sounds.dieSound);
 					game.stateManager.setScene(new MainMenuState(GameState, this.score));
 				}
+				updateVelocities(dt);
+				em.each(updatePosition, Position, THREEObject);
 				em.each(function(entity) {
 					var lifetime = em.getComponent(entity, Lifetime);
 					lifetime.life -= dt;
