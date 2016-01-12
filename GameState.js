@@ -65,6 +65,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				// Random type of powerup
 				var keys = Object.keys(powerupType);
 				var type = powerupType[keys[keys.length * Math.random() << 0]];
+				type = powerupType.INVINCIBILITY;
 				em.addComponent(powerup, new PowerupComponent(type));
 			};
 
@@ -204,9 +205,12 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					}
 					if (circleCollision(pos1, pos2, radius1, radius2, movevec)) {
 						if (em.hasComponent(entity, Enemy)) {
-							if (powerupType.INVINCIBILITY.remaining > 0) return;
-							console.log("collision mate");
-							dead = true;
+							if (powerupType.INVINCIBILITY.remaining > 0) {
+								em.removeEntity(entity);
+							} else {
+								console.log("collision mate");
+								dead = true;
+							}
 						} else if (em.hasComponent(entity, PowerupComponent)) {
 							// if (Math.random() < 0.02) game.openLink("http://lmgtfy.com/?q=you+got+a+powerup");
 							var type = em.getComponent(entity, PowerupComponent).type;
