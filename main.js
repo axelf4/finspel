@@ -6,7 +6,8 @@ requirejs.config({
 		"stats": "lib/stats",
 		"GPUParticleSystem": "lib/GPUParticleSystem",
 		"SPE": "lib/SPE.min",
-		"EffectComposer": "scripts/EffectComposer"
+		"EffectComposer": "scripts/EffectComposer",
+		"Parse": "http:" + "//www.parsecdn.com/js/parse-1.6.14.min"
 	},
 	shim: {
 		"fowl": {
@@ -64,8 +65,9 @@ requirejs.config({
 		}
 	}
 });
-requirejs(["game", "GameState"], function(game, GameState) {
+requirejs(["game", "MainMenuState", "Parse"], function(game, MainMenuState, Parse) {
 	console.log("hello");
-	game.stateManager.setScene(new GameState());
+	Parse.initialize("meS7bwISCH95qPABwjHjUqMlYfLdE5NNVK0XqcIJ", "BZbTgFC42J0yLQxsYpQwz4TQ6CMKvlCQKxWkSk3z");
+	game.stateManager.setScene(new MainMenuState());
 	game.update();
 });

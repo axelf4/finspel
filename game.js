@@ -1,5 +1,5 @@
-define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "StateManager", "TextRenderer"],
-		function(THREE, fowl, GPUParticleSystem, effect, components, StateManager, TextRenderer) {
+define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "StateManager", "TextRenderer", "Parse"],
+		function(THREE, fowl, GPUParticleSystem, effect, components, StateManager, TextRenderer, Parse) {
 			var scene = new THREE.Scene();
 			var virtualWidth = 800, virtualHeight = 600, targetAspectRatio = virtualWidth / virtualHeight;
 			var camera = new THREE.OrthographicCamera(0, virtualWidth, virtualHeight, 0, -1, 1);
@@ -89,6 +89,8 @@ define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "S
 				sounds.emp = source;
 			});
 
+			var GameScore = Parse.Object.extend("GameScore");
+
 			// window.onbeforeunload = function() { return "Fukc yo sweet mama.\n If yu leave i kill you." };
 
 			var openLink = function(url) {
@@ -144,6 +146,7 @@ define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "S
 					openLink: openLink,
 					buildEffects: buildEffects,
 					addEffectBuilder: addEffectBuilder,
-					glitchPass: glitchPass
+					glitchPass: glitchPass,
+					GameScore: GameScore
 			};
 		});

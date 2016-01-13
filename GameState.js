@@ -1,5 +1,5 @@
-define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants", "MainMenuState", "EffectComposer", "circleCollision"],
-		function(THREE, fowl, GPUParticleSystem, game, components, constants, MainMenuState, EffectComposer, circleCollision) {
+define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants", "MainMenuState", "GameScoreState", "EffectComposer", "circleCollision"],
+		function(THREE, fowl, GPUParticleSystem, game, components, constants, MainMenuState, GameScoreState, EffectComposer, circleCollision) {
 			var em; // TODO remove
 			var createPlayer = function() {
 				var options = {
@@ -263,7 +263,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				updateEnemies(dt);
 				if (detectCollisions()) {
 					game.playAudio(game.sounds.dieSound);
-					game.stateManager.setScene(new MainMenuState(GameState, this.score));
+					game.stateManager.setScene(new GameScoreState(GameState, this.score));
 				}
 				updateVelocities(dt);
 				em.each(updatePosition, Position, THREEObject);

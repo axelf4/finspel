@@ -1,7 +1,5 @@
-define(["game"], function(game) {
-	var MainMenuState = function(nextState, score) {
-		this.nextState = nextState;
-		this.score = score;
+define(["game", "GameState"], function(game, GameState) {
+	var MainMenuState = function() {
 	};
 	MainMenuState.prototype.onEnter = function() {
 		var self = this;
@@ -10,14 +8,13 @@ define(["game"], function(game) {
 			ctx.font = "Bold 36px Verdana";
 			ctx.fillText("Avoid bein h4cked and r4aped.", 20, 300);
 			ctx.fillText("space to start | f to fullscreen", 60, 350);
-			ctx.fillText("your shitty score: " + Math.floor(self.score), 40, 410);
 		});
 	};
 	MainMenuState.prototype.draw = function() {
 	};
 	MainMenuState.prototype.update = function(dt) {
 		if (game.keys[32]) {
-			game.stateManager.setScene(new this.nextState);
+			game.stateManager.setScene(new GameState());
 		}
 	};
 	return MainMenuState;
