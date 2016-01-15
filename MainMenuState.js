@@ -14,7 +14,7 @@ define(["game", "GameState"], function(game, GameState) {
 	};
 	MainMenuState.prototype.update = function(dt) {
 		if (game.keys[32]) {
-			game.stateManager.setScene(new GameState());
+			game.stateManager.setState(new GameState());
 		}
 	};
 	return MainMenuState;

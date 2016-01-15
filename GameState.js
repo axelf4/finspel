@@ -263,7 +263,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				updateEnemies(dt);
 				if (detectCollisions()) {
 					game.playAudio(game.sounds.dieSound);
-					game.stateManager.setScene(new GameScoreState(GameState, this.score));
+					game.stateManager.setState(new GameScoreState(GameState, this.score));
 				}
 				updateVelocities(dt);
 				em.each(updatePosition, Position, THREEObject);
@@ -281,7 +281,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				var count = Math.min(2000, emitter.spawnRate * dt);
 				for (var x = 0; x < count; ++x) self.particleSystem.spawnParticle(emitter.options);
 				}, Position, Emitter);
-				this.particleSystem.update(tick);
+				this.particleSystem.update(tick, game.getScale());
 			};
 			return GameState;
 		});

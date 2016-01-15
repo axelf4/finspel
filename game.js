@@ -25,6 +25,10 @@ define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "S
 			};
 			buildEffects();
 
+			var textRenderer = new TextRenderer();
+
+			var scale;
+			var getScale = function() { return scale; };
 			var onResize = function() {
 				var width = window.innerWidth, height = Math.ceil(width / targetAspectRatio);
 				if (height > window.innerHeight) {
@@ -33,8 +37,13 @@ define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "S
 				}
 				// var x = window.innerWidth / 2 - width / 2, y = window.innerHeight / 2 - height / 2;
 				renderer.setSize(width, height); // renderer.setSize(window.innerWidth, window.innerHeight);
+				composer.setSize(width, height);
+				textRenderer.setSize(width, height);
+
+				scale = width / virtualWidth;
 			};
 			onResize();
+
 			var keys = {};
 			window.addEventListener("resize", onResize);
 			window.addEventListener("keydown", function(e) {
@@ -47,7 +56,7 @@ define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "S
 
 			fowl.registerComponents(Position, LastPosition, Velocity, THREEObject, Emitter, Enemy, Lifetime, CircleShape, PowerupComponent, StayInside);
 
-			var stateManager = new StateManager(), textRenderer = new TextRenderer();
+			var stateManager = new StateManager();
 			scene.add(textRenderer.getMesh());
 
 			var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -130,8 +139,8 @@ define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "S
 					dt = 0;
 					blurred = false;
 				} else tick += dt / 1000;
-				stateManager.getScene().update(dt, tick);
-				stateManager.getScene().draw();
+				stateManager.getState().update(dt, tick);
+				stateManager.getState().draw();
 				composer.render(); // renderer.render(scene, camera);
 			};
 
@@ -147,6 +156,9 @@ define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "S
 					buildEffects: buildEffects,
 					addEffectBuilder: addEffectBuilder,
 					glitchPass: glitchPass,
-					GameScore: GameScore
+					GameScore: GameScore,
+					virtualWidth: virtualWidth,
+					virtualHeight: virtualHeight,
+					getScale: getScale
 			};
 		});

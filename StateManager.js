@@ -1,10 +1,10 @@
 define([], function() {
 	var StateManager = function() {};
-	StateManager.prototype.getScene = function() { return this.current; };
-	StateManager.prototype.setScene = function(scene) {
+	StateManager.prototype.getState = function() { return this.current; };
+	StateManager.prototype.setState = function(state) {
 		if (this.current && this.current.onLeave) this.current.onLeave();
-		this.current = scene;
-		if (scene.onEnter) scene.onEnter();
+		this.current = state;
+		if (state.onEnter) state.onEnter();
 	};
 	return StateManager;
 });

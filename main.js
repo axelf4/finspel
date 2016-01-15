@@ -68,6 +68,6 @@ requirejs.config({
 requirejs(["game", "MainMenuState", "Parse"], function(game, MainMenuState, Parse) {
 	console.log("hello");
 	Parse.initialize("meS7bwISCH95qPABwjHjUqMlYfLdE5NNVK0XqcIJ", "BZbTgFC42J0yLQxsYpQwz4TQ6CMKvlCQKxWkSk3z");
-	game.stateManager.setScene(new MainMenuState());
+	game.stateManager.setState(new MainMenuState());
 	game.update();
 });

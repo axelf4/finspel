@@ -5,7 +5,7 @@ define(["game", "Parse"], function(game, Parse) {
 	};
 	GameScoreState.prototype.drawScores = function(results) {
 		var self = this;
-		if (!(game.stateManager.getScene() instanceof GameScoreState)) return;
+		if (!(game.stateManager.getState() instanceof GameScoreState)) return;
 		game.textRenderer.drawEnv(function(ctx) {
 			ctx.fillStyle = game.textRenderer.getGradient();
 			ctx.font = "Bold 36px Verdana";
@@ -48,7 +48,7 @@ define(["game", "Parse"], function(game, Parse) {
 	};
 	GameScoreState.prototype.update = function(dt) {
 		if (game.keys[32]) {
-			game.stateManager.setScene(new this.nextState);
+			game.stateManager.setState(new this.nextState);
 		}
 	};
 	return GameScoreState;
