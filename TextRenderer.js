@@ -37,7 +37,7 @@ define(["three", "constants"], function(THREE, constants) {
 	TextRenderer.prototype.setSize = function(width, height) {
 		this.canvas.width = width;
 		this.canvas.height = height;
-		this.ctx.scale(width / 800, height / 600);
+		this.ctx.scale(width / constants.virtualWidth, height / constants.virtualHeight);
 		this.drawEnv(this.lastCallback);
 	};
 	return TextRenderer;

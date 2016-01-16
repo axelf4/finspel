@@ -18,14 +18,13 @@ define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "S
 			var buildEffects = function() {
 				composer.passes = [];
 				composer.addPass( new THREE.RenderPass( scene, camera ) );
-
 				for (var i = 0; i < effectBuilders.length; i++) effectBuilders[i](composer);
-
 				composer.addPass( glitchPass );
 			};
 			buildEffects();
 
 			var textRenderer = new TextRenderer();
+			scene.add(textRenderer.getMesh());
 
 			var scale;
 			var getScale = function() { return scale; };
@@ -54,10 +53,9 @@ define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "S
 				keys[e.keyCode] = false;
 			});
 
-			fowl.registerComponents(Position, LastPosition, Velocity, THREEObject, Emitter, Enemy, Lifetime, CircleShape, PowerupComponent, StayInside);
+			fowl.registerComponents(Position, Velocity, THREEObject, Emitter, Enemy, Lifetime, CircleShape, PowerupComponent, StayInside, Mothership, Homing);
 
 			var stateManager = new StateManager();
-			scene.add(textRenderer.getMesh());
 
 			var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 			var loadAudio = function(path, onload) {
@@ -96,6 +94,9 @@ define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "S
 			});
 			loadAudio("resources/EMP bomb VFX.ogg", function(source) {
 				sounds.emp = source;
+			});
+			loadAudio("resources/inception.mp3", function(source) {
+				sounds.inception = source;
 			});
 
 			var GameScore = Parse.Object.extend("GameScore");
@@ -142,6 +143,15 @@ define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "S
 				stateManager.getState().update(dt, tick);
 				stateManager.getState().draw();
 				composer.render(); // renderer.render(scene, camera);
+			};
+
+			/**
+			 * t - 0 - 1
+			 * b - start value
+			 * c - change (end - start)
+			 */
+			Math.easeInCubic = function(t, c) {
+				return t*t*t;
 			};
 
 			return {

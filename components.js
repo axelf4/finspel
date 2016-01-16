@@ -3,11 +3,6 @@ var Position = function(x, y) {
 	this.y = y;
 };
 
-var LastPosition = function(x, y) {
-	this.x = x || 0;
-	this.y = y || 0;
-};
-
 var Velocity = function(x, y) {
 	this.x = x || 0;
 	this.y = y || 0;
@@ -26,7 +21,7 @@ var Emitter = function(options, spawnRate) {
 var Enemy = function() {};
 
 var Lifetime = function(life) {
-	this.life = life;
+	this.life = this.total = life;
 };
 
 var CircleShape = function(radius) {
@@ -39,3 +34,12 @@ var PowerupComponent = function(type) {
 };
 
 var StayInside = function() {};
+
+var Mothership = function(direction) {
+	this.direction = direction;
+	this.childTimer = 0;
+};
+
+var Homing = function(direction) {
+	this.direction = direction;
+};

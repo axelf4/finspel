@@ -1,5 +1,5 @@
-define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants", "MainMenuState", "GameScoreState", "EffectComposer", "circleCollision"],
-		function(THREE, fowl, GPUParticleSystem, game, components, constants, MainMenuState, GameScoreState, EffectComposer, circleCollision) {
+define(["three", "fowl", "GPUParticleSystem", "game", "components", "MainMenuState", "GameScoreState", "EffectComposer", "circleCollision"],
+		function(THREE, fowl, GPUParticleSystem, game, components, MainMenuState, GameScoreState, EffectComposer, circleCollision) {
 			var em; // TODO remove
 			var createPlayer = function() {
 				var options = {
@@ -16,8 +16,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				};
 
 				var player = em.createEntity();
-				em.addComponent(player, new Position(constants.virtualWidth / 2, constants.virtualHeight / 2));
-				em.addComponent(player, new LastPosition());
+				em.addComponent(player, new Position(game.virtualWidth / 2, game.virtualHeight / 2));
 				em.addComponent(player, new Velocity());
 				em.addComponent(player, new Emitter(options, 5));
 				em.addComponent(player, new StayInside());
@@ -58,7 +57,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				};
 
 				var powerup = em.createEntity();
-				em.addComponent(powerup, new Position(Math.random() * constants.virtualWidth, Math.random() * constants.virtualHeight));
+				em.addComponent(powerup, new Position(left + Math.random() * right, bottom + Math.random() * top));
 				em.addComponent(powerup, new Emitter(options, 0.2));
 				em.addComponent(powerup, new Lifetime(4000));
 				em.addComponent(powerup, new CircleShape(15));
@@ -106,10 +105,10 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				velocity.x = 0;
 				velocity.y = 0;
 				var speed = 0.35;
-				if ((game.keys[65] || game.keys[37]) && position.x > 0) velocity.x -= speed;
-				if ((game.keys[83] || game.keys[40]) && position.y > 0) velocity.y -= speed;
-				if ((game.keys[68] || game.keys[39]) && position.x < constants.virtualWidth) velocity.x += speed;
-				if ((game.keys[87] || game.keys[38]) && position.y < constants.virtualHeight) velocity.y += speed;
+				if (game.keys[65] || game.keys[37]) velocity.x -= speed;
+				if (game.keys[83] || game.keys[40]) velocity.y -= speed;
+				if (game.keys[68] || game.keys[39]) velocity.x += speed;
+				if (game.keys[87] || game.keys[38]) velocity.y += speed;
 			};
 			var spawnEnemy = function(x, y, direction, dt) {
 				var options = {
@@ -126,7 +125,6 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				};
 				var enemy = em.createEntity();
 				em.addComponent(enemy, new Position(x, y));
-				em.addComponent(enemy, new LastPosition());
 				var speed = 0.165;
 				direction = direction * Math.PI / 180;
 				em.addComponent(enemy, new Velocity(Math.cos(direction) * speed, Math.sin(direction) * speed));
@@ -134,12 +132,16 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				em.addComponent(enemy, new Enemy());
 				em.addComponent(enemy, new Lifetime(8000));
 				em.addComponent(enemy, new CircleShape(25));
+				return enemy;
 			};
+
+			var scale;
+			var left = 0, right = 800, bottom = 0, top = 600;
 
 			var enemyTimer = 0, enemySpawnRate;
 			var updateEnemies = function(dt) {
 				enemyTimer += dt;
-				enemySpawnRate -= 0.03 * dt;
+				enemySpawnRate = Math.max(400, enemySpawnRate - 0.015 * dt);
 				// TODO switch to loop
 				if (enemyTimer > enemySpawnRate) {
 					if (enemyTimer - enemySpawnRate > enemySpawnRate) console.log("Enemy spawn overflow");
@@ -147,39 +149,116 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					var x, y, pad = 50;
 					pad = 0;
 					direction = Math.random() * 360;
+					// var right = game.virtualWidth / scale, top = game.virtualHeight / scale;
 					if (direction < 135 && direction >= 45) {
-						x = Math.random() * 800;
-						y = 0 - pad;
+						x = Math.random() * right;
+						y = bottom - pad;
 					} else if (direction < 225 && direction >= 135) {
-						x = 800 + pad;
-						y = Math.random() * 600;
+						x = right + pad;
+						y = Math.random() * top;
 					} else if (direction < 315 && direction >=225) {
-						x = Math.random() * 800;
-						y = 600 + pad;
+						x = Math.random() * right;
+						y = top + pad;
 					} else {
-						x = 0 - pad;
-						y = Math.random() * 600;
+						x = left - pad;
+						y = Math.random() * top;
 					}
 					spawnEnemy(x, y, direction, dt);
 				}
 			};
+			var spawnMothership = function() {
+				if (game.sounds.inception) game.playAudio(game.sounds.inception);
+				window.setTimeout(function() { if (game.sounds.inception) game.playAudio(game.sounds.inception); }, 4000);
+				var direction = Math.random() * 2 * Math.PI;
+				var distance = 3200;
+				var x = Math.cos(direction) * distance, y = Math.sin(direction) * distance;
+				direction -= Math.PI;
+				var options = {
+					position: new THREE.Vector3(),
+					positionRandomness: 100,
+					velocity: new THREE.Vector3(),
+					velocityRandomness: 1000,
+					color: 0x1BE215,
+					colorRandomness: .5,
+					turbulence: 30,
+					lifetime: 15,
+					size: 1000,
+					sizeRandomness: 30
+				};
+				var enemy = em.createEntity();
+				em.addComponent(enemy, new Position(x, y));
+				var speed = 0.04;
+				em.addComponent(enemy, new Velocity(Math.cos(direction) * speed, Math.sin(direction) * speed));
+				em.addComponent(enemy, new Emitter(options, 0.0001));
+				em.addComponent(enemy, new Enemy());
+				em.addComponent(enemy, new Lifetime(70000));
+				em.addComponent(enemy, new CircleShape(300));
+				em.addComponent(enemy, new Mothership(direction));
+			};
+			var updateMothership = function(dt) {
+				var mothershipExists = false;
+				em.each(function(entity) {
+					mothershipExists = true;
+					var mothership = em.getComponent(entity, Mothership);
+					var position = em.getComponent(entity, Position);
+
+					mothership.childTimer += dt;
+					var childInterval = 2000;
+					if (mothership.childTimer > childInterval) {
+						mothership.childTimer -= childInterval;
+						var direction = Math.random() * 360;
+						var enemy = spawnEnemy(position.x, position.y, direction);
+						em.addComponent(enemy, new Homing(direction * Math.PI / 180));
+					}
+				}, Mothership);
+				return mothershipExists;
+			};
+			var updateHoming = function(dt) {
+				em.each(function(entity) {
+					var position = em.getComponent(entity, Position);
+					var velocity = em.getComponent(entity, Velocity);
+					var homing = em.getComponent(entity, Homing);
+					var lifetime = em.getComponent(entity, Lifetime);
+					var phase = lifetime.life / lifetime.total;
+
+					var speed, turnRate;
+					if (phase > 0.5) {
+						speed = 0.11;
+						turnRate = 1;
+					} else {
+						speed = 1.3;
+						turnRate = 0.0003;
+					}
+					var playerPos = em.getComponent(player, Position);
+					var angle = Math.atan2(playerPos.y - position.y, playerPos.x - position.x);
+					if (angle !== homing.direction) {
+						var delta = angle - homing.direction;
+						// Keep it in range from -180 to 180 to make the most efficient turns.
+						if (delta > Math.PI) delta -= Math.PI * 2;
+						if (delta < -Math.PI) delta += Math.PI * 2;
+						if (delta > 0) homing.direction += turnRate * dt;
+						else homing.direction -= turnRate * dt;
+						if (Math.abs(delta) < turnRate * dt) homing.direction = angle;
+					}
+					velocity.x = Math.cos(homing.direction) * speed;
+					velocity.y = Math.sin(homing.direction) * speed;
+				}, Position, Velocity, Lifetime, Homing);
+			};
+
 			var updateVelocities = function(dt) {
 				var factor = powerupType.SLOWMO.remaining <= 0 ? 1 : 1 / 3;
 				em.each(function(entity) {
 					var position = em.getComponent(entity, Position);
-					var lastPosition = em.getComponent(entity, LastPosition);
 					var velocity = em.getComponent(entity, Velocity);
-					lastPosition.x = position.x;
-					lastPosition.y = position.y;
 					position.x += velocity.x * dt * factor;
 					position.y += velocity.y * dt * factor;
 					if (em.hasComponent(entity, StayInside)) {
-						if (position.x < 0) position.x = 0;
-						if (position.x > constants.virtualWidth) position.x = constants.virtualWidth;
-						if (position.y < 0) position.y = 0;
-						if (position.y > constants.virtualHeight) position.y = constants.virtualHeight;
+						if (position.x < left) position.x = left;
+						if (position.x > right) position.x = right;
+						if (position.y < bottom) position.y = bottom;
+						if (position.y > top) position.y = top;
 					}
-				}, Position, LastPosition, Velocity);
+				}, Position, Velocity);
 			};
 			var updatePosition = function(entity) {
 					var position = em.getComponent(entity, Position),
@@ -216,7 +295,10 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 							type.remaining += type.duration;
 							if (game.sounds[type.sound]) game.playAudio(game.sounds[type.sound]);
 							em.removeEntity(entity);
-							if (type === powerupType.NUKE) em.each(function(entity) { em.removeEntity(entity); }, Enemy);
+							if (type === powerupType.NUKE) em.each(function(entity) {
+								if (!em.hasComponent(entity, Mothership)) em.removeEntity(entity);
+								enemyTimer -= 200;
+							}, Enemy);
 						}
 					}
 				}, Position, CircleShape);
@@ -242,7 +324,11 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				game.scene.add(this.particleSystem);
 				player = createPlayer();
 				this.drawScore(this.oldScore = this.score = 0);
+				enemyTimer = 0;
 				enemySpawnRate = 1000;
+				powerupTimer = 0;
+				this.scaleTimer = 0;
+				this.hadMothership = false;
 			};
 			GameState.prototype.onLeave = function() {
 				for (var key in powerupType) powerupType[key].remaining = 0;
@@ -258,9 +344,31 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 					this.drawScore(this.score);
 					this.oldScore = this.score;
 				}
+
+				var mothershipExists = updateMothership(dt);
+				// if (!mothershipExists && !this.hadMothership && this.score > 25) {
+				if (!mothershipExists && !this.hadMothership && this.score > 5) {
+					this.hadMothership = true;
+				   	spawnMothership();
+				}
+				if (this.scaleTimer < 1) this.scaleTimer = (this.scaleTimer + (mothershipExists ? 1 : -1) * 0.00005 * dt);
+				else this.scaleTimer = 1;
+				if (this.scaleTimer < 0) this.scaleTimer = 0;
+				scale = 1 + 5 * Math.easeInCubic(this.scaleTimer);
+				this.particleSystem.scale.x = 1 / scale;
+				this.particleSystem.scale.y = 1 / scale;
+				this.particleSystem.position.x = game.virtualWidth / 2 * -(1 / scale - 1);
+				this.particleSystem.position.y = game.virtualHeight / 2 * -(1 / scale - 1);
+
+				left = -game.virtualWidth * (scale - 1) / 2;
+				bottom = -game.virtualHeight * (scale - 1) / 2;
+				right = left + game.virtualWidth * scale;
+				top = bottom + game.virtualHeight * scale;
+
 				updatePowerups(dt);
 				updatePlayer(dt);
-				updateEnemies(dt);
+				if (!mothershipExists) updateEnemies(dt);
+				updateHoming(dt);
 				if (detectCollisions()) {
 					game.playAudio(game.sounds.dieSound);
 					game.stateManager.setState(new GameScoreState(GameState, this.score));
@@ -269,9 +377,10 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				em.each(updatePosition, Position, THREEObject);
 				em.each(function(entity) {
 					var lifetime = em.getComponent(entity, Lifetime);
-					lifetime.life -= dt;
+					lifetime.life -= dt / scale;
 					if (lifetime.life <= 0) em.removeEntity(entity);
 				}, Lifetime);
+
 				em.each(function(entity) {
 					var position = em.getComponent(entity, Position),
 					emitter = em.getComponent(entity, Emitter);
@@ -281,7 +390,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "constants",
 				var count = Math.min(2000, emitter.spawnRate * dt);
 				for (var x = 0; x < count; ++x) self.particleSystem.spawnParticle(emitter.options);
 				}, Position, Emitter);
-				this.particleSystem.update(tick, game.getScale());
+				this.particleSystem.update(tick, game.getScale() / scale);
 			};
 			return GameState;
 		});
