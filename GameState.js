@@ -346,8 +346,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "MainMenuSta
 				}
 
 				var mothershipExists = updateMothership(dt);
-				// if (!mothershipExists && !this.hadMothership && this.score > 25) {
-				if (!mothershipExists && !this.hadMothership && this.score > 5) {
+				if (!mothershipExists && !this.hadMothership && this.score > 25) {
 					this.hadMothership = true;
 				   	spawnMothership();
 				}
