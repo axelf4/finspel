@@ -98,7 +98,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "MainMenuSta
 			});
 
 			var canBeKilled = function(entity) {
-				return em.hasComponent(entity, Mothership);
+				return !em.hasComponent(entity, Mothership);
 			};
 
 			var player;
