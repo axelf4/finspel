@@ -97,6 +97,10 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "MainMenuSta
 				if (powerupType.INVINCIBILITY.remaining > 0) {}
 			});
 
+			var canBeKilled = function(entity) {
+				return em.hasComponent(entity, Mothership);
+			};
+
 			var player;
 
 			var updatePlayer = function(dt) {
@@ -284,7 +288,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "MainMenuSta
 					if (circleCollision(pos1, pos2, radius1, radius2, movevec)) {
 						if (em.hasComponent(entity, Enemy)) {
 							if (powerupType.INVINCIBILITY.remaining > 0) {
-								em.removeEntity(entity);
+								if (canBeKilled(entity)) em.removeEntity(entity);
 							} else {
 								console.log("collision mate");
 								dead = true;
@@ -296,7 +300,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "MainMenuSta
 							if (game.sounds[type.sound]) game.playAudio(game.sounds[type.sound]);
 							em.removeEntity(entity);
 							if (type === powerupType.NUKE) em.each(function(entity) {
-								if (!em.hasComponent(entity, Mothership)) em.removeEntity(entity);
+								if (canBeKilled(entity)) em.removeEntity(entity);
 								enemyTimer -= 200;
 							}, Enemy);
 						}
@@ -350,9 +354,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "MainMenuSta
 					this.hadMothership = true;
 				   	spawnMothership();
 				}
-				if (this.scaleTimer < 1) this.scaleTimer = (this.scaleTimer + (mothershipExists ? 1 : -1) * 0.00005 * dt);
-				else this.scaleTimer = 1;
-				if (this.scaleTimer < 0) this.scaleTimer = 0;
+				this.scaleTimer = Math.max(0, Math.min(1, this.scaleTimer + (mothershipExists ? 1 : -1) * 0.00005 * dt));
 				scale = 1 + 5 * Math.easeInCubic(this.scaleTimer);
 				this.particleSystem.scale.x = 1 / scale;
 				this.particleSystem.scale.y = 1 / scale;
@@ -381,13 +383,13 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "MainMenuSta
 				}, Lifetime);
 
 				em.each(function(entity) {
-					var position = em.getComponent(entity, Position),
-					emitter = em.getComponent(entity, Emitter);
-				if (!emitter.enabled) return;
-				emitter.options.position.x = position.x;
-				emitter.options.position.y = position.y;
-				var count = Math.min(2000, emitter.spawnRate * dt);
-				for (var x = 0; x < count; ++x) self.particleSystem.spawnParticle(emitter.options);
+					var position = em.getComponent(entity, Position);
+					var emitter = em.getComponent(entity, Emitter);
+					if (!emitter.enabled) return;
+					emitter.options.position.x = position.x;
+					emitter.options.position.y = position.y;
+					var count = Math.min(2000, emitter.spawnRate * dt);
+					for (var x = 0; x < count; ++x) self.particleSystem.spawnParticle(emitter.options);
 				}, Position, Emitter);
 				this.particleSystem.update(tick, game.getScale() / scale);
 			};
