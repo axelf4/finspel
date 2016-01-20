@@ -218,6 +218,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "MainMenuSta
 				return mothershipExists;
 			};
 			var updateHoming = function(dt) {
+				var factor = powerupType.SLOWMO.remaining <= 0 ? 1 : 1 / 3;
 				em.each(function(entity) {
 					var position = em.getComponent(entity, Position);
 					var velocity = em.getComponent(entity, Velocity);
@@ -233,6 +234,7 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "MainMenuSta
 						speed = 1.3;
 						turnRate = 0.0003;
 					}
+					turnRate *= factor;
 					var playerPos = em.getComponent(player, Position);
 					var angle = Math.atan2(playerPos.y - position.y, playerPos.x - position.x);
 					if (angle !== homing.direction) {
