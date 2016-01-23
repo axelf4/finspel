@@ -1,4 +1,4 @@
-define(["game", "Parse"], function(game, Parse) {
+define(["game", "Parse", "QueryString"], function(game, Parse, QueryString) {
 	var GameScoreState = function(nextState, score) {
 		this.nextState = nextState;
 		this.score = score;
@@ -9,7 +9,7 @@ define(["game", "Parse"], function(game, Parse) {
 		game.textRenderer.drawEnv(function(ctx) {
 			ctx.fillStyle = game.textRenderer.getGradient();
 			ctx.font = "Bold 36px Verdana";
-			ctx.fillText("Highscores beatch", 140, 100);
+			ctx.fillText("Highscores" + (QueryString.fin ? '' : " beatch"), 140, 100);
 
 			if (results) {
 				var y = 200;

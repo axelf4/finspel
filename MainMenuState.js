@@ -1,4 +1,4 @@
-define(["game", "GameState"], function(game, GameState) {
+define(["game", "GameState", "QueryString"], function(game, GameState, QueryString) {
 	var MainMenuState = function() {
 	};
 	MainMenuState.prototype.onEnter = function() {
@@ -6,7 +6,7 @@ define(["game", "GameState"], function(game, GameState) {
 		game.textRenderer.drawEnv(function(ctx) {
 			ctx.fillStyle = game.textRenderer.getGradient();
 			ctx.font = "Bold 36px Verdana";
-			ctx.fillText("Avoid bein h4cked and r4aped.", 20, 300);
+			ctx.fillText("Avoid bein h4cked" + (QueryString.fin ? '' : " and r4aped."), 20, 300);
 			ctx.fillText("space to start | f to fullscreen", 60, 350);
 		});
 	};
