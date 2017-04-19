@@ -7,7 +7,7 @@ requirejs.config({
 		"GPUParticleSystem": "lib/GPUParticleSystem",
 		"SPE": "lib/SPE.min",
 		"EffectComposer": "scripts/EffectComposer",
-		"Parse": "http:" + "//www.parsecdn.com/js/parse-1.6.14.min"
+		"firebase": "https://www.gstatic.com/firebasejs/3.4.1/firebase",
 	},
 	shim: {
 		"fowl": {
@@ -23,6 +23,9 @@ requirejs.config({
 		"SPE": {
 			deps: ["three"],
 			exports: "SPE"
+		},
+		"firebase": {
+			exports: "firebase"
 		},
 		"scripts/GlitchPass": {
 			deps: ["three"],
@@ -65,9 +68,22 @@ requirejs.config({
 		}
 	}
 });
-requirejs(["game", "MainMenuState", "Parse"], function(game, MainMenuState, Parse) {
-	console.log("hello");
-	Parse.initialize("meS7bwISCH95qPABwjHjUqMlYfLdE5NNVK0XqcIJ", "BZbTgFC42J0yLQxsYpQwz4TQ6CMKvlCQKxWkSk3z");
-	game.stateManager.setState(new MainMenuState());
-	game.update();
+
+requirejs(["firebase"], function(firebase) {
+	// Initialize Firebase
+	var config = {
+		apiKey: "AIzaSyA5n-onyDK-nK_mHZL0bU0ud_kBgY_JJ6I",
+		authDomain: "finspel.firebaseapp.com",
+		databaseURL: "https://finspel.firebaseio.com",
+		storageBucket: "finspel.appspot.com",
+		messagingSenderId: "488508002629"
+	};
+	firebase.initializeApp(config);
+
+	requirejs(["game", "MainMenuState"], function(game, MainMenuState) {
+		console.log("hello");
+		game.stateManager.setState(new MainMenuState());
+		game.update();
+	});
+
 });

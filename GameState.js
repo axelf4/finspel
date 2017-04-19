@@ -114,6 +114,9 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "MainMenuSta
 				if (game.keys[68] || game.keys[39]) velocity.x += speed;
 				if (game.keys[87] || game.keys[38]) velocity.y += speed;
 			};
+
+			const homingSpeed = 1.2;
+
 			var spawnEnemy = function(x, y, direction, dt) {
 				var options = {
 					position: new THREE.Vector3(),
@@ -195,10 +198,45 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "MainMenuSta
 				em.addComponent(enemy, new Velocity(Math.cos(direction) * speed, Math.sin(direction) * speed));
 				em.addComponent(enemy, new Emitter(options, 0.0001));
 				em.addComponent(enemy, new Enemy());
-				em.addComponent(enemy, new Lifetime(70000));
+				em.addComponent(enemy, new Lifetime(35000));
 				em.addComponent(enemy, new CircleShape(300));
 				em.addComponent(enemy, new Mothership(direction));
 			};
+
+			/**
+			 * @param x0 Position of target
+			 * @param y0 Y position of target.
+			 * @param vx Horizontal velocity of target.
+			 * @param x1 X position of missile.
+			 * @param s Speed of missile.
+			 */
+			var getInterceptAngle = function(x0, y0, vx, vy, x1, y1, s) {
+				// p0 + (v0 * t) = p1 + v1 * t
+				// (p0.x + v0.x * t - p1.x)^2 + (p0.y + v0.y * t - p1.y)^2 = (s1 * t)^2
+				const a = vx * vx + vy * vy - s * s;
+				const b = 2 * ((x0 * vx) + (y0 * vy) - (x1 * vx) - (y1 * vy));
+				const c = (x0 * x0) + (y0 * y0) + (x1 * x1) + (y1 * y1) - (2 * x1 * x0) - (2 * y1 * y0);
+
+				const t1 = (-b + Math.sqrt((b * b) - (4 * a * c))) / (2 * a);
+				const t2 = (-b - Math.sqrt((b * b) - (4 * a * c))) / (2 * a);
+				var t;
+				if (t1 < 0) {
+					t = t2;
+				} else if (t2 < 0) {
+					t = t1;
+				} else {
+					t = Math.min(t1, t2);
+				}
+				if (t > 5000) t = -1;
+
+				if (t < 0) {
+					return Math.atan2(y0 - y1, x0 - x1);
+				}
+				const hitX = x0 + vx * t,
+					hitY = y0 + vy * t;
+				return Math.atan2(hitY - y1, hitX - x1);
+			};
+
 			var updateMothership = function(dt) {
 				var mothershipExists = false;
 				em.each(function(entity) {
@@ -207,18 +245,22 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "MainMenuSta
 					var position = em.getComponent(entity, Position);
 
 					mothership.childTimer += dt;
-					var childInterval = 2000;
+					const childInterval = 6000;
 					if (mothership.childTimer > childInterval) {
 						mothership.childTimer -= childInterval;
-						var direction = Math.random() * 360;
+						var playerPos = em.getComponent(player, Position);
+						var playerVel = em.getComponent(player, Velocity);
+						// const direction = Math.atan2(playerPos.y - position.y, playerPos.x - position.x);
+						var direction = getInterceptAngle(playerPos.x, playerPos.y, playerVel.x, playerVel.y,
+							position.x, position.y, homingSpeed);
 						var enemy = spawnEnemy(position.x, position.y, direction);
-						em.addComponent(enemy, new Homing(direction * Math.PI / 180));
+						em.addComponent(enemy, new Homing(direction));
 					}
 				}, Mothership);
 				return mothershipExists;
 			};
 			var updateHoming = function(dt) {
-				var factor = powerupType.SLOWMO.remaining <= 0 ? 1 : 1 / 3;
+				const factor = powerupType.SLOWMO.remaining <= 0 ? 1 : 1 / 3;
 				em.each(function(entity) {
 					var position = em.getComponent(entity, Position);
 					var velocity = em.getComponent(entity, Velocity);
@@ -226,28 +268,27 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "MainMenuSta
 					var lifetime = em.getComponent(entity, Lifetime);
 					var phase = lifetime.life / lifetime.total;
 
-					var speed, turnRate;
-					if (phase > 0.5) {
-						speed = 0.11;
-						turnRate = 1;
-					} else {
-						speed = 1.3;
-						turnRate = 0.0003;
-					}
-					turnRate *= factor;
 					var playerPos = em.getComponent(player, Position);
-					var angle = Math.atan2(playerPos.y - position.y, playerPos.x - position.x);
+					var playerVel = em.getComponent(player, Velocity);
+					var distance = Math.sqrt(Math.pow(playerPos.x - position.x, 2) + Math.pow(playerPos.y - position.y, 2));
+					// var angle = Math.atan2(playerPos.y - position.y, playerPos.x - position.x);
+					const angle = getInterceptAngle(playerPos.x, playerPos.y, playerVel.x, playerVel.y,
+						position.x, position.y, homingSpeed);
+					var delta = angle - homing.direction;
+					// Keep it in range from -180 to 180 to make the most efficient turns.
+					if (delta > Math.PI) delta -= Math.PI * 2;
+					if (delta < -Math.PI) delta += Math.PI * 2;
+					var turnRate = 0;
+					if (distance > 1500) turnRate = 0.005;
+					turnRate *= factor;
+
 					if (angle !== homing.direction) {
-						var delta = angle - homing.direction;
-						// Keep it in range from -180 to 180 to make the most efficient turns.
-						if (delta > Math.PI) delta -= Math.PI * 2;
-						if (delta < -Math.PI) delta += Math.PI * 2;
 						if (delta > 0) homing.direction += turnRate * dt;
 						else homing.direction -= turnRate * dt;
 						if (Math.abs(delta) < turnRate * dt) homing.direction = angle;
 					}
-					velocity.x = Math.cos(homing.direction) * speed;
-					velocity.y = Math.sin(homing.direction) * speed;
+					velocity.x = Math.cos(homing.direction) * homingSpeed;
+					velocity.y = Math.sin(homing.direction) * homingSpeed;
 				}, Position, Velocity, Lifetime, Homing);
 			};
 
@@ -352,7 +393,8 @@ define(["three", "fowl", "GPUParticleSystem", "game", "components", "MainMenuSta
 				}
 
 				var mothershipExists = updateMothership(dt);
-				if (!mothershipExists && !this.hadMothership && this.score > 25) {
+				if (!mothershipExists && !this.hadMothership) {
+				// if (!mothershipExists && !this.hadMothership && this.score > 25) {
 					this.hadMothership = true;
 				   	spawnMothership();
 				}

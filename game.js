@@ -1,5 +1,5 @@
-define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "StateManager", "TextRenderer", "Parse"],
-		function(THREE, fowl, GPUParticleSystem, effect, components, StateManager, TextRenderer, Parse) {
+define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "StateManager", "TextRenderer"],
+		function(THREE, fowl, GPUParticleSystem, effect, components, StateManager, TextRenderer) {
 			var scene = new THREE.Scene();
 			var virtualWidth = 800, virtualHeight = 600, targetAspectRatio = virtualWidth / virtualHeight;
 			var camera = new THREE.OrthographicCamera(0, virtualWidth, virtualHeight, 0, -1, 1);
@@ -17,9 +17,9 @@ define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "S
 			glitchPass.renderToScreen = true;
 			var buildEffects = function() {
 				composer.passes = [];
-				composer.addPass( new THREE.RenderPass( scene, camera ) );
-				for (var i = 0; i < effectBuilders.length; i++) effectBuilders[i](composer);
-				composer.addPass( glitchPass );
+				composer.addPass(new THREE.RenderPass(scene,camera));
+				for (var i = 0; i < effectBuilders.length; ++i) effectBuilders[i](composer);
+				composer.addPass(glitchPass);
 			};
 			buildEffects();
 
@@ -99,8 +99,6 @@ define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "S
 				sounds.inception = source;
 			});
 
-			var GameScore = Parse.Object.extend("GameScore");
-
 			// window.onbeforeunload = function() { return "Fukc yo sweet mama.\n If yu leave i kill you." };
 
 			var openLink = function(url) {
@@ -166,7 +164,6 @@ define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "S
 					buildEffects: buildEffects,
 					addEffectBuilder: addEffectBuilder,
 					glitchPass: glitchPass,
-					GameScore: GameScore,
 					virtualWidth: virtualWidth,
 					virtualHeight: virtualHeight,
 					getScale: getScale
