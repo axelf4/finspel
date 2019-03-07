@@ -43,11 +43,25 @@ define(["three", "fowl", "GPUParticleSystem", "EffectComposer", "components", "S
 			};
 			onResize();
 
+			var toggleFullscreen = function toggleFullscreen() {
+				var canvas = renderer.domElement;
+				if (document.fullscreenElement || document.mozFullScreenElement
+					|| document.msFullscreenElement || document.webkitFullscreenElement)
+					(document.exitFullscreen || document.mozCancelFullScreen
+						|| document.msExitFullscreen || document.webkitExitFullscreen).call(document);
+				else {
+					((canvas.requestFullscreen || canvas.mozRequestFullScreen
+						|| canvas.msRequestFullscreen || canvas.webkitRequestFullScreen).call(canvas)
+						|| Promise.resolve())
+						.catch(e => { alert(`Error attempting to enable full-screen mode: ${e.message} (${e.name})`); });
+				}
+			};
+
 			var keys = {};
 			window.addEventListener("resize", onResize);
 			window.addEventListener("keydown", function(e) {
+				if (e.keyCode === 70 && !keys[e.keyCode]) toggleFullscreen();
 				keys[e.keyCode] = true;
-				if (e.keyCode === 70) renderer.domElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
 			});
 			window.addEventListener("keyup", function(e) {
 				keys[e.keyCode] = false;
